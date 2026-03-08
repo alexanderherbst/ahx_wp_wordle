@@ -557,6 +557,9 @@
             }));
 
             if (localSaved) {
+                if (!isLoggedIn) {
+                    persistStateToServer();
+                }
                 return;
             }
         }
@@ -582,7 +585,8 @@
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
             },
-            body: params.toString()
+            body: params.toString(),
+            credentials: 'same-origin'
         }).catch(function () {
             return null;
         });

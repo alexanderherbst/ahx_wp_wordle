@@ -2,7 +2,7 @@
 /*
 Plugin Name: AHX WP Wordle
 Description: Stellt ein Wordle-Spiel als Shortcode bereit.
-Version: v1.0.0
+Version: v1.0.1
 Author: AHX
 */
 
@@ -46,6 +46,14 @@ function ahx_wp_wordle_get_storage_map() {
     }
 
     return is_array($storage) ? $storage : array();
+}
+
+function ahx_wp_wordle_get_max_storage_entries() {
+    if (is_user_logged_in()) {
+        return 400;
+    }
+
+    return 45;
 }
 
 function ahx_wp_wordle_save_storage_map($storage) {
@@ -143,9 +151,10 @@ function ahx_wp_wordle_save_state() {
     $storage = ahx_wp_wordle_get_storage_map();
     $storage[$puzzle_key] = $guesses;
 
-    if (count($storage) > 400) {
+    $max_storage_entries = ahx_wp_wordle_get_max_storage_entries();
+    if (count($storage) > $max_storage_entries) {
         ksort($storage);
-        $storage = array_slice($storage, -400, null, true);
+        $storage = array_slice($storage, -$max_storage_entries, null, true);
     }
 
     ahx_wp_wordle_save_storage_map($storage);
@@ -243,7 +252,7 @@ function ahx_wp_wordle_enqueue_assets() {
         'ahx-wp-wordle-script',
         plugin_dir_url(__FILE__) . 'assets/js/wordle.js',
         array(),
-        '0.1.0',
+        '0.1.1',
         true
     );
 }
