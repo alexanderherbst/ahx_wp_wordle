@@ -2,7 +2,7 @@
 /*
 Plugin Name: AHX WP Wordle
 Description: Stellt ein Wordle-Spiel als Shortcode bereit.
-Version: v1.0.1
+Version: v1.0.2
 Author: AHX
 */
 
@@ -652,24 +652,80 @@ function ahx_wp_wordle_render_help_shortcode($atts) {
     $base_language = strtolower(substr($language_code, 0, 2));
 
     if ($base_language === 'en') {
-        $title = 'How to play';
-        $items = array(
-            'Guess the hidden 5-letter word in up to 6 tries.',
-            'Each guess must be a valid word in the selected language.',
-            'Green = correct letter in correct position.',
-            'Yellow = correct letter in wrong position.',
-            'Gray = letter is not in the word.',
-            'A new puzzle is available every day at midnight (Europe/Berlin).',
+        $title = 'How the game works';
+        $intro = 'In this daily word puzzle, your goal is to find one hidden 5-letter word. You have up to six attempts, and after every guess the game gives you direct feedback so you can narrow down the solution step by step.';
+        $sections = array(
+            array(
+                'title' => '1) Enter a valid 5-letter word',
+                'paragraphs' => array(
+                    'Type your guess and submit it with Enter. The game only accepts real words in the currently selected language.',
+                    'If a word is not in the dictionary, it will not be scored. Simply try another valid word.',
+                ),
+            ),
+            array(
+                'title' => '2) Read the feedback after each attempt',
+                'paragraphs' => array(
+                    'Each letter tile changes color after submission. This tells you whether a letter is correct and where it belongs.',
+                    'Use this information to improve your next guess instead of choosing words at random.',
+                ),
+            ),
+            array(
+                'title' => '3) Solve within six attempts',
+                'paragraphs' => array(
+                    'You win as soon as all five letters are in the correct positions.',
+                    'If the word is not found after six tries, the round ends and you can continue with the next daily puzzle.',
+                ),
+            ),
+        );
+        $legend_title = 'Color hints';
+        $legend_items = array(
+            array('state' => 'correct', 'label' => 'Green', 'text' => 'letter is correct and in the correct position.'),
+            array('state' => 'present', 'label' => 'Yellow', 'text' => 'letter exists in the word, but in a different position.'),
+            array('state' => 'absent', 'label' => 'Gray', 'text' => 'letter is not part of the target word.'),
+        );
+        $tips_title = 'Good to know';
+        $tips = array(
+            'A new puzzle is released every day at midnight (Europe/Berlin).',
+            'Statistics are updated automatically after each finished round.',
+            'A strong strategy is to start with words that contain common vowels and consonants.',
         );
     } else {
-        $title = 'Anleitung';
-        $items = array(
-            'Errate das versteckte Wort mit 5 Buchstaben in maximal 6 Versuchen.',
-            'Jeder Versuch muss ein gültiges Wort in der gewählten Sprache sein.',
-            'Grün = richtiger Buchstabe an der richtigen Position.',
-            'Gelb = richtiger Buchstabe an falscher Position.',
-            'Grau = Buchstabe ist nicht im Zielwort enthalten.',
-            'Täglich um Mitternacht (Europe/Berlin) gibt es ein neues Rätsel.',
+        $title = 'So funktioniert das Spiel';
+        $intro = 'In diesem täglichen Worträtsel sollst du ein verborgenes Wort mit 5 Buchstaben finden. Du hast dafür bis zu sechs Versuche. Nach jedem Versuch erhältst du eine klare Rückmeldung, mit der du dich Schritt für Schritt zur Lösung vorarbeiten kannst.';
+        $sections = array(
+            array(
+                'title' => '1) Gib ein gültiges Wort mit 5 Buchstaben ein',
+                'paragraphs' => array(
+                    'Trage deinen Tipp ein und bestätige mit Enter. Es werden nur echte Wörter in der aktuell gewählten Sprache akzeptiert.',
+                    'Ist ein Wort nicht im Wörterbuch enthalten, wird der Versuch nicht gewertet und du kannst direkt ein anderes Wort eingeben.',
+                ),
+            ),
+            array(
+                'title' => '2) Werte die Rückmeldung nach jedem Versuch aus',
+                'paragraphs' => array(
+                    'Nach dem Absenden färben sich die Buchstabenfelder. So erkennst du sofort, welche Buchstaben richtig sind und wo sie hingehören.',
+                    'Nutze diese Hinweise gezielt für den nächsten Versuch, statt wahllos zu raten.',
+                ),
+            ),
+            array(
+                'title' => '3) Löse das Wort in maximal sechs Versuchen',
+                'paragraphs' => array(
+                    'Du gewinnst, sobald alle fünf Buchstaben an der richtigen Position stehen.',
+                    'Wenn das Wort nach sechs Versuchen nicht gefunden wurde, endet die Runde und du kannst beim nächsten Tagesrätsel neu starten.',
+                ),
+            ),
+        );
+        $legend_title = 'Farbbedeutung';
+        $legend_items = array(
+            array('state' => 'correct', 'label' => 'Grün', 'text' => 'Buchstabe ist richtig und an der richtigen Position.'),
+            array('state' => 'present', 'label' => 'Gelb', 'text' => 'Buchstabe kommt im Wort vor, steht aber an einer anderen Position.'),
+            array('state' => 'absent', 'label' => 'Grau', 'text' => 'Buchstabe kommt im Zielwort nicht vor.'),
+        );
+        $tips_title = 'Gut zu wissen';
+        $tips = array(
+            'Täglich um Mitternacht (Europe/Berlin) wird ein neues Rätsel freigeschaltet.',
+            'Deine Statistik wird nach jeder abgeschlossenen Runde automatisch aktualisiert.',
+            'Ein guter Einstieg sind Wörter mit häufigen Vokalen und Konsonanten.',
         );
     }
 
@@ -677,11 +733,38 @@ function ahx_wp_wordle_render_help_shortcode($atts) {
     ?>
     <div class="ahx-wordle-help">
         <h3 class="ahx-wordle-help__title"><?php echo esc_html($title); ?></h3>
-        <ul class="ahx-wordle-help__list">
-            <?php foreach ($items as $item) : ?>
-                <li><?php echo esc_html((string) $item); ?></li>
-            <?php endforeach; ?>
-        </ul>
+        <p class="ahx-wordle-help__intro"><?php echo esc_html($intro); ?></p>
+
+        <?php foreach ($sections as $section) : ?>
+            <section class="ahx-wordle-help__section">
+                <h4 class="ahx-wordle-help__section-title"><?php echo esc_html((string) $section['title']); ?></h4>
+                <?php foreach ((array) $section['paragraphs'] as $paragraph) : ?>
+                    <p class="ahx-wordle-help__text"><?php echo esc_html((string) $paragraph); ?></p>
+                <?php endforeach; ?>
+            </section>
+        <?php endforeach; ?>
+
+        <section class="ahx-wordle-help__section ahx-wordle-help__section--legend">
+            <h4 class="ahx-wordle-help__section-title"><?php echo esc_html($legend_title); ?></h4>
+            <ul class="ahx-wordle-help__legend-list">
+                <?php foreach ($legend_items as $item) : ?>
+                    <li class="ahx-wordle-help__legend-item">
+                        <span class="ahx-wordle-help__swatch ahx-wordle-help__swatch--<?php echo esc_attr((string) $item['state']); ?>" aria-hidden="true"></span>
+                        <span class="ahx-wordle-help__legend-label"><?php echo esc_html((string) $item['label']); ?>:</span>
+                        <span class="ahx-wordle-help__legend-text"><?php echo esc_html((string) $item['text']); ?></span>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </section>
+
+        <section class="ahx-wordle-help__section ahx-wordle-help__section--tips">
+            <h4 class="ahx-wordle-help__section-title"><?php echo esc_html($tips_title); ?></h4>
+            <ul class="ahx-wordle-help__tips-list">
+                <?php foreach ($tips as $tip) : ?>
+                    <li><?php echo esc_html((string) $tip); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </section>
     </div>
     <?php
 
