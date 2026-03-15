@@ -13,10 +13,6 @@ Füge den Shortcode in eine Seite oder einen Beitrag ein:
 
 `[ahx_wordle]`
 
-Optional mit eigenem Titel:
-
-`[ahx_wordle title="Mein Wordle"]`
-
 Optional mit Sprache:
 
 `[ahx_wordle lang="de_DE"]`
@@ -38,7 +34,6 @@ Nach der Aktivierung findest du links im WordPress-Backend den Menüpunkt **AHX 
 
 Dort kannst du konfigurieren:
 
-- Standard-Titel des Spiels
 - Anzahl der Versuche (4 bis 10)
 - Standard-Sprache (z. B. `de_DE`, `en_US`)
 - Persistenzmodus (`auto`, `server`, `local_storage`)

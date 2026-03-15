@@ -2,7 +2,7 @@
 /*
 Plugin Name: AHX WP Wordle
 Description: Stellt ein Wordle-Spiel als Shortcode bereit.
-Version: v1.0.2
+Version: v1.1.0
 Author: AHX
 */
 
@@ -16,6 +16,7 @@ function ahx_wp_wordle_activate() {
     ahx_wp_wordle_install_tables();
     ahx_wp_wordle_seed_default_words();
     ahx_wp_wordle_maybe_migrate_legacy_words();
+    ahx_wp_wordle_cleanup_legacy_options();
 }
 register_activation_hook(__FILE__, 'ahx_wp_wordle_activate');
 
@@ -23,8 +24,18 @@ function ahx_wp_wordle_bootstrap() {
     ahx_wp_wordle_install_tables();
     ahx_wp_wordle_seed_default_words();
     ahx_wp_wordle_maybe_migrate_legacy_words();
+    ahx_wp_wordle_cleanup_legacy_options();
 }
 add_action('plugins_loaded', 'ahx_wp_wordle_bootstrap');
+
+function ahx_wp_wordle_cleanup_legacy_options() {
+    if (get_option('ahx_wp_wordle_legacy_cleanup_done', '0') === '1') {
+        return;
+    }
+
+    delete_option('ahx_wp_wordle_title');
+    update_option('ahx_wp_wordle_legacy_cleanup_done', '1', false);
+}
 
 function ahx_wp_wordle_get_storage_map() {
     $storage = array();
@@ -496,7 +507,6 @@ function ahx_wp_wordle_get_user_language_statistics($language_code, $rows) {
 function ahx_wp_wordle_render_shortcode($atts) {
     $atts = shortcode_atts(
         array(
-            'title' => '',
             'lang' => '',
         ),
         $atts,
@@ -505,9 +515,6 @@ function ahx_wp_wordle_render_shortcode($atts) {
 
     wp_enqueue_style('ahx-wp-wordle-style');
     wp_enqueue_script('ahx-wp-wordle-script');
-
-    $configured_title = (string) get_option('ahx_wp_wordle_title', 'AHX Wordle');
-    $title = trim((string) $atts['title']) !== '' ? (string) $atts['title'] : $configured_title;
 
     $configured_language = (string) get_option('ahx_wp_wordle_default_language', 'de_DE');
     $query_language = isset($_GET['ahx_wordle_lang']) ? (string) wp_unslash($_GET['ahx_wordle_lang']) : '';
@@ -570,7 +577,6 @@ function ahx_wp_wordle_render_shortcode($atts) {
     $next_midnight_ts = ahx_wp_wordle_get_next_berlin_midnight_timestamp();
 
     $payload = array(
-        'title' => sanitize_text_field($title),
         'rows' => $rows,
         'cols' => 5,
         'dayKey' => $day_key,
@@ -600,7 +606,6 @@ function ahx_wp_wordle_render_shortcode($atts) {
     ?>
     <?php $selector_id = 'ahx-wordle-language-' . wp_rand(1000, 99999); ?>
     <div class="ahx-wordle" data-cols="5" data-rows="<?php echo esc_attr((string) $rows); ?>">
-        <h2 class="ahx-wordle__title"><?php echo esc_html($payload['title']); ?></h2>
         <div class="ahx-wordle__language">
             <label for="<?php echo esc_attr($selector_id); ?>"><?php echo esc_html((string) $payload['i18n']['language_label']); ?></label>
             <select id="<?php echo esc_attr($selector_id); ?>" class="ahx-wordle__language-select" aria-label="Wordle Sprache wählen">

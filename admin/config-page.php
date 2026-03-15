@@ -598,12 +598,6 @@ function ahx_wp_wordle_sanitize_persistence_mode($value) {
 }
 
 function ahx_wp_wordle_register_settings() {
-    register_setting('ahx_wp_wordle_settings_group', 'ahx_wp_wordle_title', array(
-        'type' => 'string',
-        'sanitize_callback' => 'sanitize_text_field',
-        'default' => 'AHX Wordle',
-    ));
-
     register_setting('ahx_wp_wordle_settings_group', 'ahx_wp_wordle_rows', array(
         'type' => 'integer',
         'sanitize_callback' => 'ahx_wp_wordle_sanitize_rows',
@@ -627,14 +621,6 @@ function ahx_wp_wordle_register_settings() {
         'Allgemeine Einstellungen',
         '__return_null',
         'ahx_wp_wordle_settings'
-    );
-
-    add_settings_field(
-        'ahx_wp_wordle_title',
-        'Standard-Titel',
-        'ahx_wp_wordle_title_field',
-        'ahx_wp_wordle_settings',
-        'ahx_wp_wordle_main'
     );
 
     add_settings_field(
@@ -663,11 +649,6 @@ function ahx_wp_wordle_register_settings() {
 
 }
 add_action('admin_init', 'ahx_wp_wordle_register_settings');
-
-function ahx_wp_wordle_title_field() {
-    $value = get_option('ahx_wp_wordle_title', 'AHX Wordle');
-    echo '<input type="text" name="ahx_wp_wordle_title" value="' . esc_attr($value) . '" class="regular-text">';
-}
 
 function ahx_wp_wordle_rows_field() {
     $value = (int) get_option('ahx_wp_wordle_rows', 6);
@@ -813,7 +794,7 @@ function ahx_wp_wordle_settings_page() {
         </form>
         <hr>
 
-        <p><strong>Shortcode:</strong> <code>[ahx_wordle]</code> oder <code>[ahx_wordle title="Mein Wordle"]</code></p>
+        <p><strong>Shortcode:</strong> <code>[ahx_wordle]</code></p>
         <p><strong>Sprache überschreiben:</strong> <code>[ahx_wordle lang="en_US"]</code></p>
     </div>
     <?php
