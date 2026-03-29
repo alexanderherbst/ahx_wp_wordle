@@ -276,6 +276,26 @@ function ahx_wp_wordle_parse_csv_words($tmp_file_path, $language_code = 'de_DE')
     return array_values($words);
 }
 
+function ahx_wp_wordle_parse_bulk_words($raw, $language_code = 'de_DE') {
+    $tokens = preg_split('/[\s,;]+/u', (string) $raw);
+    $words = array();
+
+    if (!is_array($tokens)) {
+        return array();
+    }
+
+    foreach ($tokens as $token) {
+        $normalized = ahx_wp_wordle_normalize_single_word($token, $language_code);
+        if ($normalized === '') {
+            continue;
+        }
+
+        $words[$normalized] = $normalized;
+    }
+
+    return array_values($words);
+}
+
 function ahx_wp_wordle_install_tables() {
     global $wpdb;
 
@@ -553,6 +573,58 @@ function ahx_wp_wordle_handle_csv_import() {
 }
 add_action('admin_post_ahx_wp_wordle_import_csv', 'ahx_wp_wordle_handle_csv_import');
 
+function ahx_wp_wordle_handle_bulk_import() {
+    if (!current_user_can('manage_options')) {
+        wp_die('Keine Berechtigung.');
+    }
+
+    check_admin_referer('ahx_wp_wordle_import_bulk');
+
+    $language_code = ahx_wp_wordle_normalize_language_code(wp_unslash($_POST['ahx_wp_wordle_bulk_language'] ?? 'de_DE'));
+    $possible_languages = ahx_wp_wordle_get_possible_languages();
+    if (!in_array($language_code, $possible_languages, true)) {
+        $language_code = $possible_languages[0];
+    }
+
+    $raw_words = wp_unslash($_POST['ahx_wp_wordle_bulk_words'] ?? '');
+    $message = array(
+        'inserted' => 0,
+        'duplicates' => 0,
+        'language' => $language_code,
+        'error' => '',
+    );
+
+    if (!is_string($raw_words) || trim($raw_words) === '') {
+        $message['error'] = 'Bitte mindestens ein Wort im Textfeld eingeben.';
+    } else {
+        $words = ahx_wp_wordle_parse_bulk_words($raw_words, $language_code);
+
+        if (empty($words)) {
+            $message['error'] = 'Keine gültigen 5-Buchstaben-Wörter für die gewählte Sprache im Textfeld gefunden.';
+        } else {
+            $stats = ahx_wp_wordle_insert_words($language_code, $words);
+            $message['inserted'] = (int) $stats['inserted'];
+            $message['duplicates'] = (int) $stats['duplicates'];
+        }
+    }
+
+    $redirect = add_query_arg(
+        array(
+            'page' => 'ahx-wp-wordle-config',
+            'bulk_done' => '1',
+            'bulk_inserted' => (string) $message['inserted'],
+            'bulk_duplicates' => (string) $message['duplicates'],
+            'bulk_language' => $message['language'],
+            'bulk_error' => rawurlencode($message['error']),
+        ),
+        admin_url('admin.php')
+    );
+
+    wp_safe_redirect($redirect);
+    exit;
+}
+add_action('admin_post_ahx_wp_wordle_import_bulk', 'ahx_wp_wordle_handle_bulk_import');
+
 function ahx_wp_wordle_sanitize_default_language($value) {
     $requested = ahx_wp_wordle_normalize_language_code($value);
     $allowed = ahx_wp_wordle_get_possible_languages();
@@ -684,6 +756,11 @@ function ahx_wp_wordle_settings_page() {
     $import_inserted = isset($_GET['import_inserted']) ? (int) $_GET['import_inserted'] : 0;
     $import_duplicates = isset($_GET['import_duplicates']) ? (int) $_GET['import_duplicates'] : 0;
     $import_language = isset($_GET['import_language']) ? ahx_wp_wordle_normalize_language_code(wp_unslash($_GET['import_language'])) : 'de_DE';
+    $bulk_done = isset($_GET['bulk_done']) && (string) $_GET['bulk_done'] === '1';
+    $bulk_error = isset($_GET['bulk_error']) ? rawurldecode((string) $_GET['bulk_error']) : '';
+    $bulk_inserted = isset($_GET['bulk_inserted']) ? (int) $_GET['bulk_inserted'] : 0;
+    $bulk_duplicates = isset($_GET['bulk_duplicates']) ? (int) $_GET['bulk_duplicates'] : 0;
+    $bulk_language = isset($_GET['bulk_language']) ? ahx_wp_wordle_normalize_language_code(wp_unslash($_GET['bulk_language'])) : 'de_DE';
     $lang_manage = isset($_GET['lang_manage']) ? sanitize_key((string) $_GET['lang_manage']) : '';
     $lang_code = isset($_GET['lang_code']) ? ahx_wp_wordle_normalize_language_code(wp_unslash($_GET['lang_code'])) : '';
     $lang_words = isset($_GET['lang_words']) ? (int) $_GET['lang_words'] : 0;
@@ -693,6 +770,9 @@ function ahx_wp_wordle_settings_page() {
 
     if (!in_array($import_language, $possible_languages, true)) {
         $import_language = $default_language;
+    }
+    if (!in_array($bulk_language, $possible_languages, true)) {
+        $bulk_language = $default_language;
     }
 
     ?>
@@ -704,6 +784,14 @@ function ahx_wp_wordle_settings_page() {
                 <div class="notice notice-error"><p><?php echo esc_html($import_error); ?></p></div>
             <?php else : ?>
                 <div class="notice notice-success"><p><?php echo esc_html('CSV-Import abgeschlossen für ' . $import_language . '. Neu: ' . $import_inserted . ', Dubletten übersprungen: ' . $import_duplicates . '.'); ?></p></div>
+            <?php endif; ?>
+        <?php endif; ?>
+
+        <?php if ($bulk_done) : ?>
+            <?php if ($bulk_error !== '') : ?>
+                <div class="notice notice-error"><p><?php echo esc_html($bulk_error); ?></p></div>
+            <?php else : ?>
+                <div class="notice notice-success"><p><?php echo esc_html('Text-Import abgeschlossen für ' . $bulk_language . '. Neu: ' . $bulk_inserted . ', Dubletten übersprungen: ' . $bulk_duplicates . '.'); ?></p></div>
             <?php endif; ?>
         <?php endif; ?>
 
@@ -791,6 +879,35 @@ function ahx_wp_wordle_settings_page() {
 
             <?php submit_button('CSV importieren'); ?>
             <p class="description">Es wird das erste Feld je Zeile gelesen. Erlaubt sind genau 5 Buchstaben gemäß gewählter Sprache (für Deutsch inkl. ä, ö, ü, ß). Dubletten werden nicht erneut importiert.</p>
+        </form>
+
+        <hr>
+        <h3>Wörter per Textfeld importieren</h3>
+        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+            <?php wp_nonce_field('ahx_wp_wordle_import_bulk'); ?>
+            <input type="hidden" name="action" value="ahx_wp_wordle_import_bulk">
+
+            <table class="form-table" role="presentation">
+                <tr>
+                    <th scope="row"><label for="ahx_wp_wordle_bulk_language">Sprache</label></th>
+                    <td>
+                        <select id="ahx_wp_wordle_bulk_language" name="ahx_wp_wordle_bulk_language">
+                            <?php foreach ($possible_languages as $language_code) : ?>
+                                <option value="<?php echo esc_attr($language_code); ?>" <?php selected($bulk_language, $language_code); ?>><?php echo esc_html($language_code); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="ahx_wp_wordle_bulk_words">Wörter</label></th>
+                    <td>
+                        <textarea id="ahx_wp_wordle_bulk_words" name="ahx_wp_wordle_bulk_words" rows="8" class="large-text" placeholder="apfel&#10;blume&#10;tiger"></textarea>
+                        <p class="description">Mehrere Wörter möglich, getrennt durch Zeilenumbrüche, Leerzeichen, Kommas oder Semikolons. Es werden nur gültige Wörter mit 5 Buchstaben importiert.</p>
+                    </td>
+                </tr>
+            </table>
+
+            <?php submit_button('Wörter importieren'); ?>
         </form>
         <hr>
 

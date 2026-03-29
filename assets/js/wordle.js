@@ -102,6 +102,7 @@
     var currentGuess = new Array(cols).fill('');
     var activeCellIndex = 0;
     var gameOver = false;
+    var isAnimating = false;
     var pendingStatusAction = null;
 
     function isLocalStorageAvailable() {
@@ -539,6 +540,84 @@
         }
     }
 
+    function shakeActiveRow() {
+        var rowIndex = guesses.length;
+        if (rowIndex < 0 || rowIndex >= rows) {
+            return;
+        }
+
+        for (var i = 0; i < cols; i++) {
+            var cell = board[rowIndex][i];
+            if (!cell) {
+                continue;
+            }
+
+            cell.classList.remove('ahx-wordle__cell--shake');
+            void cell.offsetWidth;
+            cell.classList.add('ahx-wordle__cell--shake');
+
+            var onShakeEnd = function (event) {
+                if (event.animationName !== 'ahx-wordle-invalid-shake') {
+                    return;
+                }
+
+                cell.classList.remove('ahx-wordle__cell--shake');
+                cell.removeEventListener('animationend', onShakeEnd);
+            };
+
+            cell.addEventListener('animationend', onShakeEnd);
+        }
+    }
+
+    function revealRowAnimated(guess, result) {
+        var rowIndex = guesses.length;
+        var rowCells = board[rowIndex] || [];
+        var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (prefersReducedMotion || !rowCells.length) {
+            lockRow(guess, result);
+            return Promise.resolve();
+        }
+
+        var revealDurationMs = 700;
+        var revealStepDelayMs = 280;
+
+        return new Promise(function (resolve) {
+            var finishedCells = 0;
+
+            rowCells.forEach(function (cell, index) {
+                cell.textContent = guess[index];
+                cell.dataset.state = '';
+                cell.classList.remove('ahx-wordle__cell--shake');
+                cell.style.setProperty('--flip-delay', String(index * revealStepDelayMs) + 'ms');
+                cell.classList.remove('ahx-wordle__cell--flip');
+
+                window.setTimeout(function () {
+                    cell.dataset.state = result[index];
+                }, (index * revealStepDelayMs) + Math.floor(revealDurationMs / 2));
+
+                var onAnimationEnd = function (event) {
+                    if (event.animationName !== 'ahx-wordle-reveal-flip') {
+                        return;
+                    }
+
+                    cell.removeEventListener('animationend', onAnimationEnd);
+                    cell.classList.remove('ahx-wordle__cell--flip');
+                    cell.style.removeProperty('--flip-delay');
+                    finishedCells++;
+
+                    if (finishedCells === cols) {
+                        resolve();
+                    }
+                };
+
+                cell.addEventListener('animationend', onAnimationEnd);
+                void cell.offsetWidth;
+                cell.classList.add('ahx-wordle__cell--flip');
+            });
+        });
+    }
+
     function finish(win) {
         gameOver = true;
         renderCurrentGuess();
@@ -676,6 +755,10 @@
     }
 
     function submitGuess() {
+        if (isAnimating) {
+            return;
+        }
+
         if (!isCurrentGuessComplete()) {
             setStatus((config.i18n && config.i18n.not_enough_letters) || 'Zu wenige Buchstaben.');
             return;
@@ -683,6 +766,8 @@
 
         var guess = getCurrentGuessString().toUpperCase();
         if (words.indexOf(guess.toLowerCase()) === -1) {
+            shakeActiveRow();
+
             if (config.isAdmin) {
                 setStatusWithAction(
                     (config.i18n && config.i18n.add_word_prompt) || 'Dieses Wort ist nicht in der Liste. Als Administrator kannst du es hinzufügen.',
@@ -703,28 +788,32 @@
 
     function processAcceptedGuess(guess) {
         var result = evaluateGuess(guess, targetWord);
-        lockRow(guess, result);
-        updateKeyboard(guess, result);
-        guesses.push(guess);
-        currentGuess = new Array(cols).fill('');
-        activeCellIndex = 0;
-        persistState();
+        isAnimating = true;
 
-        if (guess === targetWord) {
-            finish(true);
-            return;
-        }
+        revealRowAnimated(guess, result).then(function () {
+            isAnimating = false;
+            updateKeyboard(guess, result);
+            guesses.push(guess);
+            currentGuess = new Array(cols).fill('');
+            activeCellIndex = 0;
+            persistState();
 
-        if (guesses.length >= rows) {
-            finish(false);
-            return;
-        }
+            if (guess === targetWord) {
+                finish(true);
+                return;
+            }
 
-        renderCurrentGuess();
+            if (guesses.length >= rows) {
+                finish(false);
+                return;
+            }
+
+            renderCurrentGuess();
+        });
     }
 
     function handleInput(key) {
-        if (gameOver) {
+        if (gameOver || isAnimating) {
             return;
         }
 
