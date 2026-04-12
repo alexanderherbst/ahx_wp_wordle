@@ -433,15 +433,30 @@
         keyboardEl.innerHTML = '';
         var rowsLayout = isGerman
             ? [
-                ['Q', 'W', 'E', 'R', 'T', 'Z', 'U', 'I', 'O', 'P', 'Ü'],
-                ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ö', 'Ä'],
-                ['ENTER', 'Y', 'X', 'C', 'V', 'B', 'N', 'M', 'ẞ', '←']
+                ['Q', 'W', 'E', 'R', 'T', 'Z', 'U', 'I', 'O', 'P'],
+                ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+                ['Y', 'X', 'C', 'V', 'B', 'N', 'M'],
+                ['ENTER', 'Ä', 'Ö', 'Ü', 'ẞ', '←']
             ]
             : [
                 ['Q', 'W', 'E', 'R', 'T', 'Z', 'U', 'I', 'O', 'P'],
                 ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
-                ['ENTER', 'Y', 'X', 'C', 'V', 'B', 'N', 'M', '←']
+                ['Y', 'X', 'C', 'V', 'B', 'N', 'M'],
+                ['ENTER', '←']
             ];
+
+        var standardKeyColumns = 0;
+        rowsLayout.forEach(function (tokens) {
+            var standardKeyCount = tokens.filter(function (token) {
+                return token !== 'ENTER' && token !== '←';
+            }).length;
+
+            if (standardKeyCount > standardKeyColumns) {
+                standardKeyColumns = standardKeyCount;
+            }
+        });
+
+        keyboardEl.style.setProperty('--ahx-key-columns', String(Math.max(standardKeyColumns, 1)));
 
         rowsLayout.forEach(function (tokens) {
             var rowEl = document.createElement('div');
@@ -467,6 +482,11 @@
         var rowIndex = guesses.length;
         if (rowIndex >= rows) {
             return;
+        }
+
+        var activeCells = boardEl.querySelectorAll('.ahx-wordle__cell--active');
+        for (var i = 0; i < activeCells.length; i++) {
+            activeCells[i].classList.remove('ahx-wordle__cell--active');
         }
 
         for (var c = 0; c < cols; c++) {

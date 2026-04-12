@@ -2,7 +2,7 @@
 /*
 Plugin Name: AHX WP Wordle
 Description: Stellt ein Wordle-Spiel als Shortcode bereit.
-Version: v1.2.0
+Version: v1.2.1
 Author: AHX
 */
 
