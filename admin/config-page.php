@@ -747,7 +747,7 @@ function ahx_wp_wordle_persistence_mode_field() {
     echo '<option value="server" ' . selected($value, 'server', false) . '>Server</option>';
     echo '<option value="local_storage" ' . selected($value, 'local_storage', false) . '>localStorage</option>';
     echo '</select>';
-    echo '<p class="description">Auto: Benutzer angemeldet = Server, Gäste = localStorage mit Server-Fallback.</p>';
+    echo '<p class="description">' . esc_html__('Auto: Benutzer angemeldet = Server, Gäste = localStorage mit Server-Fallback.', 'ahx_wp_wordle') . '</p>';
 }
 
 function ahx_wp_wordle_settings_page() {
@@ -777,7 +777,7 @@ function ahx_wp_wordle_settings_page() {
 
     ?>
     <div class="wrap">
-        <h2>AHX WP Wordle Einstellungen</h2>
+        <h2><?php echo esc_html__('AHX WP Wordle Einstellungen', 'ahx_wp_wordle'); ?></h2>
 
         <?php if ($import_done) : ?>
             <?php if ($import_error !== '') : ?>
@@ -805,9 +805,9 @@ function ahx_wp_wordle_settings_page() {
             <?php elseif ($lang_manage === 'blocked_in_use') : ?>
                 <div class="notice notice-error"><p><?php echo esc_html('Sprache kann nicht gelöscht werden. Vorhandene Daten - Wörter: ' . $lang_words . ', Statistik: ' . $lang_history . '.'); ?></p></div>
             <?php elseif ($lang_manage === 'last_language') : ?>
-                <div class="notice notice-error"><p>Die letzte verbleibende Sprache kann nicht gelöscht werden.</p></div>
+                <div class="notice notice-error"><p><?php echo esc_html__('Die letzte verbleibende Sprache kann nicht gelöscht werden.', 'ahx_wp_wordle'); ?></p></div>
             <?php elseif ($lang_manage === 'not_found') : ?>
-                <div class="notice notice-warning"><p>Die Sprache wurde nicht gefunden.</p></div>
+                <div class="notice notice-warning"><p><?php echo esc_html__('Die Sprache wurde nicht gefunden.', 'ahx_wp_wordle'); ?></p></div>
             <?php endif; ?>
         <?php endif; ?>
 
@@ -820,19 +820,19 @@ function ahx_wp_wordle_settings_page() {
         </form>
 
         <hr>
-        <h3>Sprachverwaltung</h3>
+        <h3><?php echo esc_html__('Sprachverwaltung', 'ahx_wp_wordle'); ?></h3>
 
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin-bottom: 12px;">
             <?php wp_nonce_field('ahx_wp_wordle_manage_languages'); ?>
             <input type="hidden" name="action" value="ahx_wp_wordle_add_language">
-            <label for="ahx_wp_wordle_new_language"><strong>Sprache hinzufügen:</strong></label>
+            <label for="ahx_wp_wordle_new_language"><strong><?php echo esc_html__('Sprache hinzufügen:', 'ahx_wp_wordle'); ?></strong></label>
             <input id="ahx_wp_wordle_new_language" type="text" name="ahx_wp_wordle_new_language" placeholder="z. B. en_US" class="regular-text" required>
             <?php submit_button('Sprache hinzufügen', 'secondary', 'submit', false); ?>
         </form>
 
         <table class="wp-list-table widefat fixed striped" style="max-width: 700px; margin-bottom: 20px;">
             <thead>
-                <tr><th>Sprache</th><th>Wörter</th><th>Statistik</th><th>Aktion</th></tr>
+                <tr><th>Sprache</th><th>Wörter</th><th><?php echo esc_html__('Statistik', 'ahx_wp_wordle'); ?></th><th>Aktion</th></tr>
             </thead>
             <tbody>
             <?php foreach ($possible_languages as $language_code) : ?>
@@ -855,14 +855,14 @@ function ahx_wp_wordle_settings_page() {
         </table>
 
         <hr>
-        <h3>CSV-Import Wörter</h3>
+        <h3><?php echo esc_html__('CSV-Import Wörter', 'ahx_wp_wordle'); ?></h3>
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" enctype="multipart/form-data">
             <?php wp_nonce_field('ahx_wp_wordle_import_csv'); ?>
             <input type="hidden" name="action" value="ahx_wp_wordle_import_csv">
 
             <table class="form-table" role="presentation">
                 <tr>
-                    <th scope="row"><label for="ahx_wp_wordle_import_language">Sprache</label></th>
+                    <th scope="row"><label for="ahx_wp_wordle_import_language"><?php echo esc_html__('Sprache', 'ahx_wp_wordle'); ?></label></th>
                     <td>
                         <select id="ahx_wp_wordle_import_language" name="ahx_wp_wordle_import_language">
                             <?php foreach ($possible_languages as $language_code) : ?>
@@ -872,24 +872,24 @@ function ahx_wp_wordle_settings_page() {
                     </td>
                 </tr>
                 <tr>
-                    <th scope="row"><label for="ahx_wp_wordle_csv">CSV-Datei</label></th>
+                    <th scope="row"><label for="ahx_wp_wordle_csv"><?php echo esc_html__('CSV-Datei', 'ahx_wp_wordle'); ?></label></th>
                     <td><input id="ahx_wp_wordle_csv" type="file" name="ahx_wp_wordle_csv" accept=".csv,text/csv"></td>
                 </tr>
             </table>
 
             <?php submit_button('CSV importieren'); ?>
-            <p class="description">Es wird das erste Feld je Zeile gelesen. Erlaubt sind genau 5 Buchstaben gemäß gewählter Sprache (für Deutsch inkl. ä, ö, ü, ß). Dubletten werden nicht erneut importiert.</p>
+            <p class="description"><?php echo esc_html__('Es wird das erste Feld je Zeile gelesen. Erlaubt sind genau 5 Buchstaben gemäß gewählter Sprache (für Deutsch inkl. ä, ö, ü, ß). Dubletten werden nicht erneut importiert.', 'ahx_wp_wordle'); ?></p>
         </form>
 
         <hr>
-        <h3>Wörter per Textfeld importieren</h3>
+        <h3><?php echo esc_html__('Wörter per Textfeld importieren', 'ahx_wp_wordle'); ?></h3>
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
             <?php wp_nonce_field('ahx_wp_wordle_import_bulk'); ?>
             <input type="hidden" name="action" value="ahx_wp_wordle_import_bulk">
 
             <table class="form-table" role="presentation">
                 <tr>
-                    <th scope="row"><label for="ahx_wp_wordle_bulk_language">Sprache</label></th>
+                    <th scope="row"><label for="ahx_wp_wordle_bulk_language"><?php echo esc_html__('Sprache', 'ahx_wp_wordle'); ?></label></th>
                     <td>
                         <select id="ahx_wp_wordle_bulk_language" name="ahx_wp_wordle_bulk_language">
                             <?php foreach ($possible_languages as $language_code) : ?>
@@ -899,10 +899,10 @@ function ahx_wp_wordle_settings_page() {
                     </td>
                 </tr>
                 <tr>
-                    <th scope="row"><label for="ahx_wp_wordle_bulk_words">Wörter</label></th>
+                    <th scope="row"><label for="ahx_wp_wordle_bulk_words"><?php echo esc_html__('Wörter', 'ahx_wp_wordle'); ?></label></th>
                     <td>
                         <textarea id="ahx_wp_wordle_bulk_words" name="ahx_wp_wordle_bulk_words" rows="8" class="large-text" placeholder="apfel&#10;blume&#10;tiger"></textarea>
-                        <p class="description">Mehrere Wörter möglich, getrennt durch Zeilenumbrüche, Leerzeichen, Kommas oder Semikolons. Es werden nur gültige Wörter mit 5 Buchstaben importiert.</p>
+                        <p class="description"><?php echo esc_html__('Mehrere Wörter möglich, getrennt durch Zeilenumbrüche, Leerzeichen, Kommas oder Semikolons. Es werden nur gültige Wörter mit 5 Buchstaben importiert.', 'ahx_wp_wordle'); ?></p>
                     </td>
                 </tr>
             </table>
@@ -911,8 +911,8 @@ function ahx_wp_wordle_settings_page() {
         </form>
         <hr>
 
-        <p><strong>Shortcode:</strong> <code>[ahx_wordle]</code></p>
-        <p><strong>Sprache überschreiben:</strong> <code>[ahx_wordle lang="en_US"]</code></p>
+        <p><strong><?php echo esc_html__('Shortcode:', 'ahx_wp_wordle'); ?></strong> <code>[ahx_wordle]</code></p>
+        <p><strong><?php echo esc_html__('Sprache überschreiben:', 'ahx_wp_wordle'); ?></strong> <code>[ahx_wordle lang="en_US"]</code></p>
     </div>
     <?php
 }

@@ -2,15 +2,33 @@
 /*
 Plugin Name: AHX WP Wordle
 Description: Stellt ein Wordle-Spiel als Shortcode bereit.
-Version: v1.2.1
+Version: v1.3.0
 Author: AHX
+Text Domain: ahx_wp_wordle
+Domain Path: /languages
 */
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
+function ahx_wp_wordle_try_load_core() {
+    $core_file = WP_PLUGIN_DIR . '/ahx_wp_core/ahx_wp_core.php';
+    if (file_exists($core_file)) {
+        require_once $core_file;
+        return true;
+    }
+
+    return false;
+}
+
+ahx_wp_wordle_try_load_core();
+
 require_once plugin_dir_path(__FILE__) . 'admin/config-page.php';
+
+function ahx_wp_wordle_load_textdomain() {
+    load_plugin_textdomain('ahx_wp_wordle', false, dirname(plugin_basename(__FILE__)) . '/languages');
+}
 
 function ahx_wp_wordle_activate() {
     ahx_wp_wordle_install_tables();
@@ -26,7 +44,34 @@ function ahx_wp_wordle_bootstrap() {
     ahx_wp_wordle_maybe_migrate_legacy_words();
     ahx_wp_wordle_cleanup_legacy_options();
 }
-add_action('plugins_loaded', 'ahx_wp_wordle_bootstrap');
+
+if (class_exists('AHX_Core_Plugin_Base')) {
+    class AHX_WP_Wordle_Plugin extends AHX_Core_Plugin_Base {
+
+        protected function register_hooks() {
+            $this->add_action('plugins_loaded', 'load_textdomain');
+            $this->add_action('plugins_loaded', 'bootstrap_runtime');
+        }
+
+        public function load_textdomain() {
+            ahx_wp_wordle_load_textdomain();
+        }
+
+        public function bootstrap_runtime() {
+            ahx_wp_wordle_bootstrap();
+            $this->log('debug', 'Wordle wurde ueber AHX Core initialisiert.');
+        }
+    }
+
+    AHX_WP_Wordle_Plugin::boot(array(
+        'plugin_file' => __FILE__,
+        'plugin_slug' => 'ahx_wp_wordle',
+        'log_source' => 'ahx_wp_wordle',
+    ));
+} else {
+    add_action('plugins_loaded', 'ahx_wp_wordle_load_textdomain');
+    add_action('plugins_loaded', 'ahx_wp_wordle_bootstrap');
+}
 
 function ahx_wp_wordle_cleanup_legacy_options() {
     if (get_option('ahx_wp_wordle_legacy_cleanup_done', '0') === '1') {
