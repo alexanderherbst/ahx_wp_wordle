@@ -664,6 +664,21 @@
     function finish(win) {
         gameOver = true;
         renderCurrentGuess();
+
+        if (statsEl) {
+            statsEl.style.display = 'block';
+        }
+
+        var gameViewRoot = root.closest('.ahx-wordle-view--game');
+        if (gameViewRoot) {
+            if (boardEl) {
+                boardEl.style.display = 'none';
+            }
+            if (keyboardEl) {
+                keyboardEl.style.display = 'none';
+            }
+        }
+
         if (win) {
             setStatus((config.i18n && config.i18n.won) || 'Du hast gewonnen.');
         } else {
