@@ -2,7 +2,7 @@
 /*
 Plugin Name: AHX WP Wordle
 Description: Stellt ein Wordle-Spiel als Shortcode bereit.
-Version: v1.3.0
+Version: v1.4.0
 Author: AHX
 Text Domain: ahx_wp_wordle
 Domain Path: /languages
@@ -243,6 +243,29 @@ function ahx_wp_wordle_add_word() {
         'inserted' => ((int) ($insert_result['inserted'] ?? 0)) > 0,
         'alreadyExists' => ((int) ($insert_result['duplicates'] ?? 0)) > 0,
     ));
+}
+
+add_action('wp_ajax_ahx_wp_wordle_track_unknown_word', 'ahx_wp_wordle_track_unknown_word');
+add_action('wp_ajax_nopriv_ahx_wp_wordle_track_unknown_word', 'ahx_wp_wordle_track_unknown_word');
+function ahx_wp_wordle_track_unknown_word() {
+    $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
+    if (!wp_verify_nonce($nonce, 'ahx_wp_wordle_state')) {
+        wp_send_json_error(array('message' => 'Ungültiger Nonce'), 403);
+    }
+
+    if (current_user_can('manage_options')) {
+        wp_send_json_success(array('tracked' => false, 'reason' => 'admin_excluded'));
+    }
+
+    $language_code = ahx_wp_wordle_normalize_language_code(wp_unslash($_POST['language'] ?? 'de_DE'));
+    $word = ahx_wp_wordle_normalize_single_word(wp_unslash($_POST['word'] ?? ''), $language_code);
+
+    if ($word === '') {
+        wp_send_json_error(array('message' => 'Ungültiges Wort'), 400);
+    }
+
+    $tracked = ahx_wp_wordle_track_unknown_word_entry($language_code, $word);
+    wp_send_json_success(array('tracked' => (bool) $tracked));
 }
 
 add_action('wp_ajax_ahx_wp_wordle_reset_stats', 'ahx_wp_wordle_reset_stats');

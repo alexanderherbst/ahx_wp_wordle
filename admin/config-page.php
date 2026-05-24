@@ -23,6 +23,11 @@ function ahx_wp_wordle_history_table() {
     return $wpdb->prefix . 'ahx_wp_wordle_history';
 }
 
+function ahx_wp_wordle_unknown_words_table() {
+    global $wpdb;
+    return $wpdb->prefix . 'ahx_wp_wordle_unknown_words';
+}
+
 function ahx_wp_wordle_normalize_language_code($language_code) {
     $language_code = preg_replace('/[^A-Za-z_]/', '', (string) $language_code);
     if ($language_code === '') {
@@ -145,6 +150,67 @@ function ahx_wp_wordle_get_language_usage($language_code) {
         'words' => $words_count,
         'history' => $history_count,
     );
+}
+
+function ahx_wp_wordle_track_unknown_word_entry($language_code, $word) {
+    global $wpdb;
+
+    $language_code = ahx_wp_wordle_normalize_language_code($language_code);
+    $word = ahx_wp_wordle_normalize_single_word($word, $language_code);
+    if ($word === '') {
+        return false;
+    }
+
+    $words_table = ahx_wp_wordle_words_table();
+    $unknown_table = ahx_wp_wordle_unknown_words_table();
+
+    $exists = (int) $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$words_table} WHERE language_code = %s AND word = %s",
+            $language_code,
+            $word
+        )
+    );
+
+    if ($exists > 0) {
+        return false;
+    }
+
+    $wpdb->query(
+        $wpdb->prepare(
+            "INSERT INTO {$unknown_table} (language_code, word, first_seen_at, last_seen_at, seen_count)
+             VALUES (%s, %s, UTC_TIMESTAMP(), UTC_TIMESTAMP(), 1)
+             ON DUPLICATE KEY UPDATE seen_count = seen_count + 1, last_seen_at = UTC_TIMESTAMP()",
+            $language_code,
+            $word
+        )
+    );
+
+    return true;
+}
+
+function ahx_wp_wordle_get_unknown_words($language_code, $limit = 200) {
+    global $wpdb;
+
+    $language_code = ahx_wp_wordle_normalize_language_code($language_code);
+    $limit = max(1, min(500, (int) $limit));
+
+    $unknown_table = ahx_wp_wordle_unknown_words_table();
+
+    $rows = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT id, word, seen_count, first_seen_at, last_seen_at
+             FROM {$unknown_table}
+             WHERE language_code = %s
+             ORDER BY seen_count DESC, last_seen_at DESC, word ASC
+             LIMIT %d",
+            $language_code,
+            $limit
+        ),
+        ARRAY_A
+    );
+
+    return is_array($rows) ? $rows : array();
 }
 
 function ahx_wp_wordle_handle_add_language() {
@@ -301,6 +367,7 @@ function ahx_wp_wordle_install_tables() {
 
     $words_table = ahx_wp_wordle_words_table();
     $history_table = ahx_wp_wordle_history_table();
+    $unknown_table = ahx_wp_wordle_unknown_words_table();
     $charset_collate = $wpdb->get_charset_collate();
 
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -327,8 +394,22 @@ function ahx_wp_wordle_install_tables() {
         KEY idx_language_word (language_code, word_id)
     ) {$charset_collate};";
 
+    $sql_unknown = "CREATE TABLE {$unknown_table} (
+        id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        language_code varchar(16) NOT NULL,
+        word varchar(5) NOT NULL,
+        seen_count bigint(20) unsigned NOT NULL DEFAULT 1,
+        first_seen_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        last_seen_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uniq_language_word (language_code, word),
+        KEY idx_language_seen (language_code, seen_count),
+        KEY idx_language_last_seen (language_code, last_seen_at)
+    ) {$charset_collate};";
+
     dbDelta($sql_words);
     dbDelta($sql_history);
+    dbDelta($sql_unknown);
 }
 
 function ahx_wp_wordle_insert_words($language_code, $words) {
@@ -625,6 +706,122 @@ function ahx_wp_wordle_handle_bulk_import() {
 }
 add_action('admin_post_ahx_wp_wordle_import_bulk', 'ahx_wp_wordle_handle_bulk_import');
 
+function ahx_wp_wordle_handle_import_tracked_words() {
+    if (!current_user_can('manage_options')) {
+        wp_die('Keine Berechtigung.');
+    }
+
+    check_admin_referer('ahx_wp_wordle_import_tracked_words');
+
+    $language_code = ahx_wp_wordle_normalize_language_code(wp_unslash($_POST['ahx_wp_wordle_tracked_language'] ?? 'de_DE'));
+    $possible_languages = ahx_wp_wordle_get_possible_languages();
+    if (!in_array($language_code, $possible_languages, true)) {
+        $language_code = $possible_languages[0];
+    }
+
+    $selected_ids_raw = wp_unslash($_POST['ahx_wp_wordle_tracked_ids'] ?? array());
+    $selected_ids = array();
+
+    if (is_array($selected_ids_raw)) {
+        foreach ($selected_ids_raw as $raw_id) {
+            $id = (int) $raw_id;
+            if ($id > 0) {
+                $selected_ids[$id] = $id;
+            }
+        }
+    }
+
+    $message = array(
+        'language' => $language_code,
+        'selected' => count($selected_ids),
+        'inserted' => 0,
+        'duplicates' => 0,
+        'discarded' => 0,
+        'error' => '',
+    );
+    $operation = sanitize_key((string) wp_unslash($_POST['ahx_wp_wordle_tracked_operation'] ?? 'import'));
+    if (!in_array($operation, array('import', 'discard'), true)) {
+        $operation = 'import';
+    }
+
+    if (empty($selected_ids)) {
+        $message['error'] = 'Bitte mindestens ein getracktes Wort auswählen.';
+    } else {
+        global $wpdb;
+
+        $unknown_table = ahx_wp_wordle_unknown_words_table();
+        $ids_placeholder = implode(',', array_fill(0, count($selected_ids), '%d'));
+        $params = array_merge(array($language_code), array_values($selected_ids));
+
+        if ($operation === 'discard') {
+            $deleted = (int) $wpdb->query(
+                $wpdb->prepare(
+                    "DELETE FROM {$unknown_table}
+                     WHERE language_code = %s AND id IN ({$ids_placeholder})",
+                    $params
+                )
+            );
+
+            $message['discarded'] = max(0, $deleted);
+        } else {
+            $rows = $wpdb->get_col(
+                $wpdb->prepare(
+                    "SELECT word
+                     FROM {$unknown_table}
+                     WHERE language_code = %s AND id IN ({$ids_placeholder})",
+                    $params
+                )
+            );
+
+            $words = array();
+            if (is_array($rows)) {
+                foreach ($rows as $word) {
+                    $normalized = ahx_wp_wordle_normalize_single_word((string) $word, $language_code);
+                    if ($normalized !== '') {
+                        $words[$normalized] = $normalized;
+                    }
+                }
+            }
+
+            if (empty($words)) {
+                $message['error'] = 'Keine gültigen Wörter in der Auswahl gefunden.';
+            } else {
+                $stats = ahx_wp_wordle_insert_words($language_code, array_values($words));
+                $message['inserted'] = (int) ($stats['inserted'] ?? 0);
+                $message['duplicates'] = (int) ($stats['duplicates'] ?? 0);
+
+                $deleted = (int) $wpdb->query(
+                    $wpdb->prepare(
+                        "DELETE FROM {$unknown_table}
+                         WHERE language_code = %s AND id IN ({$ids_placeholder})",
+                        $params
+                    )
+                );
+                $message['discarded'] = max(0, $deleted);
+            }
+        }
+    }
+
+    $redirect = add_query_arg(
+        array(
+            'page' => 'ahx-wp-wordle-config',
+            'tracked_done' => '1',
+            'tracked_language' => $message['language'],
+            'tracked_selected' => (string) $message['selected'],
+            'tracked_inserted' => (string) $message['inserted'],
+            'tracked_duplicates' => (string) $message['duplicates'],
+            'tracked_discarded' => (string) $message['discarded'],
+            'tracked_operation' => $operation,
+            'tracked_error' => rawurlencode($message['error']),
+        ),
+        admin_url('admin.php')
+    );
+
+    wp_safe_redirect($redirect);
+    exit;
+}
+add_action('admin_post_ahx_wp_wordle_import_tracked_words', 'ahx_wp_wordle_handle_import_tracked_words');
+
 function ahx_wp_wordle_sanitize_default_language($value) {
     $requested = ahx_wp_wordle_normalize_language_code($value);
     $allowed = ahx_wp_wordle_get_possible_languages();
@@ -765,6 +962,15 @@ function ahx_wp_wordle_settings_page() {
     $lang_code = isset($_GET['lang_code']) ? ahx_wp_wordle_normalize_language_code(wp_unslash($_GET['lang_code'])) : '';
     $lang_words = isset($_GET['lang_words']) ? (int) $_GET['lang_words'] : 0;
     $lang_history = isset($_GET['lang_history']) ? (int) $_GET['lang_history'] : 0;
+    $tracked_done = isset($_GET['tracked_done']) && (string) $_GET['tracked_done'] === '1';
+    $tracked_error = isset($_GET['tracked_error']) ? rawurldecode((string) $_GET['tracked_error']) : '';
+    $tracked_selected = isset($_GET['tracked_selected']) ? (int) $_GET['tracked_selected'] : 0;
+    $tracked_inserted = isset($_GET['tracked_inserted']) ? (int) $_GET['tracked_inserted'] : 0;
+    $tracked_duplicates = isset($_GET['tracked_duplicates']) ? (int) $_GET['tracked_duplicates'] : 0;
+    $tracked_discarded = isset($_GET['tracked_discarded']) ? (int) $_GET['tracked_discarded'] : 0;
+    $tracked_operation = isset($_GET['tracked_operation']) ? sanitize_key((string) $_GET['tracked_operation']) : 'import';
+    $tracked_language = isset($_GET['tracked_language']) ? ahx_wp_wordle_normalize_language_code(wp_unslash($_GET['tracked_language'])) : '';
+    $tracked_filter_language = isset($_GET['tracked_filter_language']) ? ahx_wp_wordle_normalize_language_code(wp_unslash($_GET['tracked_filter_language'])) : '';
     $possible_languages = ahx_wp_wordle_get_possible_languages();
     $default_language = ahx_wp_wordle_normalize_language_code((string) get_option('ahx_wp_wordle_default_language', 'de_DE'));
 
@@ -774,6 +980,14 @@ function ahx_wp_wordle_settings_page() {
     if (!in_array($bulk_language, $possible_languages, true)) {
         $bulk_language = $default_language;
     }
+    if (!in_array($tracked_language, $possible_languages, true)) {
+        $tracked_language = $default_language;
+    }
+    if (!in_array($tracked_filter_language, $possible_languages, true)) {
+        $tracked_filter_language = $tracked_language;
+    }
+
+    $tracked_unknown_words = ahx_wp_wordle_get_unknown_words($tracked_filter_language, 300);
 
     ?>
     <div class="wrap">
@@ -808,6 +1022,18 @@ function ahx_wp_wordle_settings_page() {
                 <div class="notice notice-error"><p><?php echo esc_html__('Die letzte verbleibende Sprache kann nicht gelöscht werden.', 'ahx_wp_wordle'); ?></p></div>
             <?php elseif ($lang_manage === 'not_found') : ?>
                 <div class="notice notice-warning"><p><?php echo esc_html__('Die Sprache wurde nicht gefunden.', 'ahx_wp_wordle'); ?></p></div>
+            <?php endif; ?>
+        <?php endif; ?>
+
+        <?php if ($tracked_done) : ?>
+            <?php if ($tracked_error !== '') : ?>
+                <div class="notice notice-error"><p><?php echo esc_html($tracked_error); ?></p></div>
+            <?php else : ?>
+                <?php if ($tracked_operation === 'discard') : ?>
+                    <div class="notice notice-success"><p><?php echo esc_html('Getrackte Wörter verworfen für ' . $tracked_language . '. Ausgewählt: ' . $tracked_selected . ', entfernt: ' . $tracked_discarded . '.'); ?></p></div>
+                <?php else : ?>
+                    <div class="notice notice-success"><p><?php echo esc_html('Getrackte Wörter verarbeitet für ' . $tracked_language . '. Ausgewählt: ' . $tracked_selected . ', übernommen: ' . $tracked_inserted . ', Dubletten: ' . $tracked_duplicates . ', aus Tracking entfernt: ' . $tracked_discarded . '.'); ?></p></div>
+                <?php endif; ?>
             <?php endif; ?>
         <?php endif; ?>
 
@@ -909,6 +1135,85 @@ function ahx_wp_wordle_settings_page() {
 
             <?php submit_button('Wörter importieren'); ?>
         </form>
+
+        <hr>
+        <h3><?php echo esc_html__('Getrackte unbekannte Wörter', 'ahx_wp_wordle'); ?></h3>
+
+        <form method="get" action="<?php echo esc_url(admin_url('admin.php')); ?>" style="margin-bottom: 12px;">
+            <input type="hidden" name="page" value="ahx-wp-wordle-config">
+            <label for="ahx_wp_wordle_tracked_filter_language"><strong><?php echo esc_html__('Sprache:', 'ahx_wp_wordle'); ?></strong></label>
+            <select id="ahx_wp_wordle_tracked_filter_language" name="tracked_filter_language">
+                <?php foreach ($possible_languages as $language_code) : ?>
+                    <option value="<?php echo esc_attr($language_code); ?>" <?php selected($tracked_filter_language, $language_code); ?>><?php echo esc_html($language_code); ?></option>
+                <?php endforeach; ?>
+            </select>
+            <?php submit_button(__('Anzeigen', 'ahx_wp_wordle'), 'secondary', 'submit', false); ?>
+        </form>
+
+        <?php if (empty($tracked_unknown_words)) : ?>
+            <p><?php echo esc_html__('Keine getrackten Wörter für die gewählte Sprache vorhanden.', 'ahx_wp_wordle'); ?></p>
+        <?php else : ?>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                <?php wp_nonce_field('ahx_wp_wordle_import_tracked_words'); ?>
+                <input type="hidden" name="action" value="ahx_wp_wordle_import_tracked_words">
+                <input type="hidden" name="ahx_wp_wordle_tracked_language" value="<?php echo esc_attr($tracked_filter_language); ?>">
+
+                <table class="wp-list-table widefat fixed striped" style="max-width: 900px; margin-bottom: 12px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"><input type="checkbox" id="ahx_wp_wordle_toggle_all_tracked"></th>
+                            <th><?php echo esc_html__('Wort', 'ahx_wp_wordle'); ?></th>
+                            <th><?php echo esc_html__('Vorkommen', 'ahx_wp_wordle'); ?></th>
+                            <th><?php echo esc_html__('Erstmalig', 'ahx_wp_wordle'); ?></th>
+                            <th><?php echo esc_html__('Zuletzt', 'ahx_wp_wordle'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($tracked_unknown_words as $tracked_row) : ?>
+                        <?php
+                        $tracked_id = (int) ($tracked_row['id'] ?? 0);
+                        $tracked_word = (string) ($tracked_row['word'] ?? '');
+                        $tracked_count = (int) ($tracked_row['seen_count'] ?? 0);
+                        $tracked_first_seen = (string) ($tracked_row['first_seen_at'] ?? '');
+                        $tracked_last_seen = (string) ($tracked_row['last_seen_at'] ?? '');
+                        ?>
+                        <tr>
+                            <td><input type="checkbox" name="ahx_wp_wordle_tracked_ids[]" value="<?php echo esc_attr((string) $tracked_id); ?>"></td>
+                            <td><code><?php echo esc_html($tracked_word); ?></code></td>
+                            <td><?php echo esc_html((string) $tracked_count); ?></td>
+                            <td><?php echo esc_html($tracked_first_seen); ?></td>
+                            <td><?php echo esc_html($tracked_last_seen); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+
+                <p>
+                    <button type="submit" name="ahx_wp_wordle_tracked_operation" value="import" class="button button-primary">
+                        <?php echo esc_html__('Ausgewählte in Wortliste übernehmen', 'ahx_wp_wordle'); ?>
+                    </button>
+                    <button type="submit" name="ahx_wp_wordle_tracked_operation" value="discard" class="button button-secondary" onclick="return window.confirm('<?php echo esc_js(__('Ausgewählte Wörter wirklich verwerfen?', 'ahx_wp_wordle')); ?>');">
+                        <?php echo esc_html__('Ausgewählte verwerfen', 'ahx_wp_wordle'); ?>
+                    </button>
+                </p>
+            </form>
+
+            <script>
+            (function () {
+                var toggleAll = document.getElementById('ahx_wp_wordle_toggle_all_tracked');
+                if (!toggleAll) {
+                    return;
+                }
+
+                toggleAll.addEventListener('change', function () {
+                    var checkboxes = document.querySelectorAll('input[name="ahx_wp_wordle_tracked_ids[]"]');
+                    checkboxes.forEach(function (checkbox) {
+                        checkbox.checked = !!toggleAll.checked;
+                    });
+                });
+            })();
+            </script>
+        <?php endif; ?>
         <hr>
 
         <p><strong><?php echo esc_html__('Shortcode:', 'ahx_wp_wordle'); ?></strong> <code>[ahx_wordle]</code></p>

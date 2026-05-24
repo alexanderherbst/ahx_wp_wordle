@@ -175,6 +175,10 @@
         var i18n = config.i18n || {};
         var stats = config.statistics || {};
         var attempts = Array.isArray(stats.attempts) ? stats.attempts : [];
+        var maxRelative = attempts.reduce(function (maxValue, row) {
+            var value = Number(row && row.relative ? row.relative : 0);
+            return value > maxValue ? value : maxValue;
+        }, 0);
 
         var cardsHtml = '' +
             '<div class="ahx-wordle__stats-grid">' +
@@ -187,7 +191,9 @@
         var attemptsRows = attempts.map(function (row) {
             var absolute = Number(row.absolute || 0);
             var relative = Number(row.relative || 0);
-            var barWidth = Math.max(0, Math.min(100, relative));
+            var barWidth = maxRelative > 0
+                ? Math.max(0, Math.min(100, (relative / maxRelative) * 100))
+                : 0;
 
             return '' +
                 '<tr>' +
@@ -467,7 +473,7 @@
                 key.type = 'button';
                 key.className = 'ahx-wordle__key';
                 key.dataset.key = token;
-                key.textContent = token;
+                key.textContent = token === 'ENTER' ? 'SET' : token;
                 if (token === 'ENTER' || token === '←') {
                     key.classList.add('ahx-wordle__key--wide');
                 }
@@ -691,6 +697,29 @@
         });
     }
 
+    function trackUnknownWord(guess) {
+        if (!config.ajaxUrl || !config.nonce || config.isAdmin) {
+            return;
+        }
+
+        var params = new URLSearchParams();
+        params.set('action', 'ahx_wp_wordle_track_unknown_word');
+        params.set('nonce', config.nonce);
+        params.set('language', currentLanguage);
+        params.set('word', guess.toLowerCase());
+
+        fetch(config.ajaxUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            },
+            body: params.toString(),
+            credentials: 'same-origin'
+        }).catch(function () {
+            return null;
+        });
+    }
+
     function addWordAsAdmin(guess, buttonEl) {
         if (!config.ajaxUrl || !config.nonce) {
             setStatus((config.i18n && config.i18n.add_word_error) || 'Wort konnte nicht hinzugefügt werden.');
@@ -798,6 +827,8 @@
                 );
                 return;
             }
+
+            trackUnknownWord(guess);
 
             setStatus((config.i18n && config.i18n.not_in_list) || 'Wort nicht erlaubt.');
             return;
