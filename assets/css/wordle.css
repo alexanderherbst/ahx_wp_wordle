@@ -208,9 +208,10 @@
     --ahx-key-gap: 3px;
     --ahx-key-width: calc((100% - ((var(--ahx-key-columns) - 1) * var(--ahx-key-gap))) / var(--ahx-key-columns));
     gap: 3px;
+    padding: 0 1px;
     width: 100%;
     max-width: 100%;
-    overflow-x: hidden;
+    overflow-x: visible;
 }
 
 .ahx-wordle__stats {
@@ -477,10 +478,11 @@
         --ahx-key-gap: 1px;
         --ahx-key-width: calc((100% - ((var(--ahx-key-columns) - 1) * var(--ahx-key-gap))) / var(--ahx-key-columns));
         gap: 1px;
+        padding: 0 1px;
         width: calc(100% - 12px);
         max-width: calc(100% - 12px);
         margin: 0 auto;
-        overflow-x: hidden;
+        overflow-x: visible;
     }
 
     .ahx-wordle__cell {
@@ -508,6 +510,7 @@
     .ahx-wordle__keyboard {
         --ahx-key-gap: 1px;
         gap: 1px;
+        padding: 0 1px;
         width: calc(100% - 18px);
         max-width: calc(100% - 18px);
         margin: 0 auto;
