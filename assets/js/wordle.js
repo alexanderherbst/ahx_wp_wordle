@@ -90,6 +90,23 @@
         return;
     }
 
+    root.addEventListener('dblclick', function (event) {
+        event.preventDefault();
+    });
+
+    var lastRootTouchEndAt = 0;
+    root.addEventListener('touchend', function (event) {
+        if (event.touches && event.touches.length > 1) {
+            return;
+        }
+
+        var now = Date.now();
+        if (now - lastRootTouchEndAt < 350) {
+            event.preventDefault();
+        }
+        lastRootTouchEndAt = now;
+    }, { passive: false });
+
     var statusEl = root.querySelector('.ahx-wordle__status');
     var boardEl = root.querySelector('.ahx-wordle__board');
     var keyboardEl = root.querySelector('.ahx-wordle__keyboard');
@@ -946,6 +963,19 @@
         }
         handleInput(button.dataset.key);
     });
+
+    keyboardEl.addEventListener('dblclick', function (event) {
+        event.preventDefault();
+    });
+
+    var lastKeyboardTouchEndAt = 0;
+    keyboardEl.addEventListener('touchend', function (event) {
+        var now = Date.now();
+        if (now - lastKeyboardTouchEndAt < 350) {
+            event.preventDefault();
+        }
+        lastKeyboardTouchEndAt = now;
+    }, { passive: false });
 
     boardEl.addEventListener('click', function (event) {
         var cell = event.target.closest('.ahx-wordle__cell');

@@ -7,6 +7,7 @@
     border-radius: 10px;
     background: #ffffff;
     font-family: Arial, sans-serif;
+    touch-action: manipulation;
 }
 
 .ahx-wordle,
@@ -212,6 +213,7 @@
     width: 100%;
     max-width: 100%;
     overflow-x: visible;
+    touch-action: manipulation;
 }
 
 .ahx-wordle__stats {
@@ -412,6 +414,9 @@
     overflow: hidden;
     text-overflow: ellipsis;
     cursor: pointer;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .ahx-wordle__key--wide {

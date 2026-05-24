@@ -2,7 +2,7 @@
 /*
 Plugin Name: AHX WP Wordle
 Description: Stellt ein Wordle-Spiel als Shortcode bereit.
-Version: v1.4.3
+Version: v1.4.4
 Author: AHX
 Text Domain: ahx_wp_wordle
 Domain Path: /languages
