@@ -179,6 +179,12 @@
         statusEl.appendChild(button);
     }
 
+    function getWonMessage() {
+        var i18n = config.i18n || {};
+        var template = String(i18n.won_with_word || 'Stark! Du hast das Wort {word} gefunden.');
+        return template.replace('{word}', targetWord);
+    }
+
     function formatPercent(value) {
         var numeric = Number(value || 0);
         return numeric.toFixed(1).replace('.0', '') + ' %';
@@ -223,7 +229,6 @@
 
         statsEl.innerHTML = '' +
             '<h3 class="ahx-wordle__stats-title">' + (i18n.stats_title || 'Statistik') + '</h3>' +
-            '<button type="button" class="ahx-wordle__stats-reset">' + (i18n.stats_reset || 'Statistik zurücksetzen') + '</button>' +
             cardsHtml +
             '<h4 class="ahx-wordle__attempts-title">' + (i18n.stats_attempts_title || 'Übersicht der Versuche') + '</h4>' +
             '<table class="ahx-wordle__attempts-table">' +
@@ -326,6 +331,13 @@
     }
 
     function initStatsActions() {
+        var resetFooterBtn = root.querySelector('#ahx-wordle-stats-reset-footer');
+        if (resetFooterBtn) {
+            resetFooterBtn.addEventListener('click', function () {
+                resetStatistics();
+            });
+        }
+
         if (!statsEl) {
             return;
         }
@@ -661,29 +673,82 @@
         });
     }
 
-    function finish(win) {
+    function refreshStatisticsFromServer() {
+        if (!config.ajaxUrl || !config.nonce) {
+            return Promise.resolve(false);
+        }
+
+        var params = new URLSearchParams();
+        params.set('action', 'ahx_wp_wordle_get_stats');
+        params.set('nonce', config.nonce);
+        params.set('language', currentLanguage);
+        params.set('rows', String(rows));
+
+        return fetch(config.ajaxUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            },
+            body: params.toString(),
+            credentials: 'same-origin'
+        }).then(function (response) {
+            return response.json();
+        }).then(function (payload) {
+            if (!payload || !payload.success || !payload.data || !payload.data.statistics) {
+                return false;
+            }
+
+            config.statistics = payload.data.statistics;
+            renderStatistics();
+            initStatsActions();
+            return true;
+        }).catch(function () {
+            return false;
+        });
+    }
+
+    function finish(win, options) {
+        options = options || {};
+        var hideGameArea = !!options.hideGameArea;
+        var refreshStats = !!options.refreshStats;
+
         gameOver = true;
         renderCurrentGuess();
 
-        if (statsEl) {
-            statsEl.style.display = 'block';
-        }
+        if (hideGameArea) {
+            var gameViewRoot = root.closest('.ahx-wordle-view--game');
+            if (gameViewRoot) {
+                if (boardEl) {
+                    boardEl.style.display = 'none';
+                }
+                if (keyboardEl) {
+                    keyboardEl.style.display = 'none';
+                }
+            }
 
-        var gameViewRoot = root.closest('.ahx-wordle-view--game');
-        if (gameViewRoot) {
-            if (boardEl) {
-                boardEl.style.display = 'none';
+            if (statsEl) {
+                statsEl.style.display = refreshStats ? 'none' : 'block';
             }
-            if (keyboardEl) {
-                keyboardEl.style.display = 'none';
-            }
+
+            var reportBtn = root.querySelector('#ahx-wordle-report-btn');
+            var resetFooterBtn = root.querySelector('#ahx-wordle-stats-reset-footer');
+            if (reportBtn) reportBtn.style.display = 'none';
+            if (resetFooterBtn) resetFooterBtn.style.display = '';
         }
 
         if (win) {
-            setStatus((config.i18n && config.i18n.won) || 'Du hast gewonnen.');
+            setStatus(getWonMessage());
         } else {
             var lostText = (config.i18n && config.i18n.lost) || 'Das gesuchte Wort war: ';
             setStatus(lostText + targetWord);
+        }
+
+        if (hideGameArea && refreshStats) {
+            refreshStatisticsFromServer().finally(function () {
+                if (statsEl) {
+                    statsEl.style.display = 'block';
+                }
+            });
         }
     }
 
@@ -695,18 +760,18 @@
 
             if (localSaved) {
                 if (!isLoggedIn) {
-                    persistStateToServer();
+                    return persistStateToServer();
                 }
-                return;
+                return Promise.resolve(true);
             }
         }
 
-        persistStateToServer();
+        return persistStateToServer();
     }
 
     function persistStateToServer() {
         if (!config.ajaxUrl || !config.nonce) {
-            return;
+            return Promise.resolve(false);
         }
 
         var params = new URLSearchParams();
@@ -717,15 +782,19 @@
             return guess.toLowerCase();
         })));
 
-        fetch(config.ajaxUrl, {
+        return fetch(config.ajaxUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
             },
             body: params.toString(),
             credentials: 'same-origin'
+        }).then(function (response) {
+            return response.json();
+        }).then(function (payload) {
+            return !!(payload && payload.success);
         }).catch(function () {
-            return null;
+            return false;
         });
     }
 
@@ -821,13 +890,13 @@
             guesses.push(guess);
 
             if (guess === targetWord) {
-                finish(true);
+                finish(true, { hideGameArea: false, refreshStats: false });
                 return;
             }
         }
 
         if (guesses.length >= rows) {
-            finish(false);
+            finish(false, { hideGameArea: false, refreshStats: false });
             return;
         }
 
@@ -879,19 +948,19 @@
             guesses.push(guess);
             currentGuess = new Array(cols).fill('');
             activeCellIndex = 0;
-            persistState();
+            persistState().finally(function () {
+                if (guess === targetWord) {
+                    finish(true, { hideGameArea: true, refreshStats: true });
+                    return;
+                }
 
-            if (guess === targetWord) {
-                finish(true);
-                return;
-            }
+                if (guesses.length >= rows) {
+                    finish(false, { hideGameArea: true, refreshStats: true });
+                    return;
+                }
 
-            if (guesses.length >= rows) {
-                finish(false);
-                return;
-            }
-
-            renderCurrentGuess();
+                renderCurrentGuess();
+            });
         });
     }
 
@@ -1008,6 +1077,89 @@
         setActiveCell(colIndex);
     });
 
+    function initReportModal() {
+        var overlay = document.getElementById('ahx-wordle-report-modal');
+        var reportBtn = document.getElementById('ahx-wordle-report-btn');
+        var closeBtn = document.getElementById('ahx-wordle-report-close');
+        var cancelBtn = document.getElementById('ahx-wordle-report-cancel');
+        var form = document.getElementById('ahx-wordle-report-form');
+
+        if (!overlay || !reportBtn || !closeBtn || !cancelBtn || !form) {
+            return;
+        }
+
+        var modalTitle = document.getElementById('ahx-wordle-modal-title');
+        var modalTitleBase = (config.i18n && config.i18n.report_word_title) || 'Lösungswort melden';
+
+        function openModal() {
+            if (modalTitle) {
+                modalTitle.textContent = modalTitleBase + ': ' + targetWord.toUpperCase();
+            }
+            overlay.classList.add('show');
+        }
+
+        function closeModal() {
+            overlay.classList.remove('show');
+        }
+
+        reportBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            openModal();
+        });
+
+        closeBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            closeModal();
+        });
+
+        cancelBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            closeModal();
+        });
+
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) {
+                closeModal();
+            }
+        });
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            var reason = document.querySelector('input[name="reason"]:checked');
+            if (!reason) {
+                return;
+            }
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', config.ajaxUrl);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    closeModal();
+                    setTimeout(function () {
+                        var statusEl = document.querySelector('.ahx-wordle__status') || document.querySelector('.ahx-wordle');
+                        if (statusEl) {
+                            var msg = document.createElement('div');
+                            msg.textContent = 'Vielen Dank für deine Meldung!';
+                            msg.style.cssText = 'color: #10b981; font-weight: 600; margin: 8px 0;';
+                            statusEl.parentNode.insertBefore(msg, statusEl);
+                            setTimeout(function () {
+                                msg.remove();
+                            }, 3000);
+                        }
+                    }, 200);
+                }
+            };
+
+            xhr.send('action=ahx_wp_wordle_report_word' +
+                '&nonce=' + encodeURIComponent(config.nonce) +
+                '&language=' + encodeURIComponent(currentLanguage) +
+                '&word=' + encodeURIComponent(targetWord) +
+                '&reason=' + encodeURIComponent(reason.value));
+        });
+    }
+
     savedGuesses = resolveInitialSavedGuesses();
 
     createBoard();
@@ -1016,6 +1168,15 @@
     initStatsActions();
     initCountdown();
     initLanguageSelector();
+    initReportModal();
     applySavedGuesses();
     renderCurrentGuess();
+
+    // If rendered via [ahx_wordle_stats] shortcode, immediately show reset button instead of report button
+    if (root.closest('.ahx-wordle-view--stats')) {
+        var reportBtn = root.querySelector('#ahx-wordle-report-btn');
+        var resetFooterBtn = root.querySelector('#ahx-wordle-stats-reset-footer');
+        if (reportBtn) reportBtn.style.display = 'none';
+        if (resetFooterBtn) resetFooterBtn.style.display = '';
+    }
 })();

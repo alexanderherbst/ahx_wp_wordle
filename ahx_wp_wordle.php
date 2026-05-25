@@ -2,7 +2,7 @@
 /*
 Plugin Name: AHX WP Wordle
 Description: Stellt ein Wordle-Spiel als Shortcode bereit.
-Version: v1.5.0
+Version: v2.0.0
 Author: AHX
 Text Domain: ahx_wp_wordle
 Domain Path: /languages
@@ -297,27 +297,265 @@ function ahx_wp_wordle_reset_stats() {
     wp_send_json_success(array('reset' => true));
 }
 
+add_action('wp_ajax_ahx_wp_wordle_get_stats', 'ahx_wp_wordle_get_stats');
+add_action('wp_ajax_nopriv_ahx_wp_wordle_get_stats', 'ahx_wp_wordle_get_stats');
+function ahx_wp_wordle_get_stats() {
+    $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
+    if (!wp_verify_nonce($nonce, 'ahx_wp_wordle_state')) {
+        wp_send_json_error(array('message' => 'Ungültiger Nonce'), 403);
+    }
+
+    $language_code = ahx_wp_wordle_normalize_language_code(wp_unslash($_POST['language'] ?? 'de_DE'));
+    $rows = (int) wp_unslash($_POST['rows'] ?? 6);
+    $rows = max(4, min(10, $rows));
+
+    $statistics = ahx_wp_wordle_get_user_language_statistics($language_code, $rows);
+    wp_send_json_success(array('statistics' => $statistics));
+}
+
 function ahx_wp_wordle_add_admin_menu() {
     add_menu_page(
         'AHX WP Wordle',
         'AHX WP Wordle',
         'manage_options',
-        'ahx-wp-wordle-config',
-        'ahx_wp_wordle_settings_page',
+        'ahx-wp-wordle',
+        'ahx_wp_wordle_landing_page',
         'dashicons-games',
         4
     );
 
     add_submenu_page(
-        'ahx-wp-wordle-config',
+        'ahx-wp-wordle',
+        'AHX WP Wordle',
+        'Dashboard',
+        'manage_options',
+        'ahx-wp-wordle',
+        'ahx_wp_wordle_landing_page'
+    );
+
+    add_submenu_page(
+        'ahx-wp-wordle',
         'AHX WP Wordle Einstellungen',
         'Einstellungen',
+        'manage_options',
+        'ahx-wp-wordle-config',
+        'ahx_wp_wordle_settings_redirect_page'
+    );
+
+    add_options_page(
+        'AHX WP Wordle Einstellungen',
+        'AHX WP Wordle',
         'manage_options',
         'ahx-wp-wordle-config',
         'ahx_wp_wordle_settings_page'
     );
 }
 add_action('admin_menu', 'ahx_wp_wordle_add_admin_menu');
+
+function ahx_wp_wordle_settings_redirect_page() {
+    if (!current_user_can('manage_options')) {
+        wp_die('Keine Berechtigung.');
+    }
+
+    wp_safe_redirect(admin_url('options-general.php?page=ahx-wp-wordle-config'));
+    exit;
+}
+
+function ahx_wp_wordle_landing_page() {
+    if (!current_user_can('manage_options')) {
+        wp_die('Keine Berechtigung.');
+    }
+
+    global $wpdb;
+
+    $settings_url = admin_url('options-general.php?page=ahx-wp-wordle-config');
+    $help_url = admin_url('post-new.php?post_type=page');
+    $shortcode_game = '[ahx_wordle_game]';
+    $shortcode_stats = '[ahx_wordle_stats]';
+    $shortcode_help = '[ahx_wordle_help]';
+
+    $language_rows = function_exists('ahx_wp_wordle_get_languages_with_counts')
+        ? ahx_wp_wordle_get_languages_with_counts()
+        : array();
+
+    $language_count = 0;
+    $words_total = 0;
+    $words_by_language = array();
+
+    if (is_array($language_rows)) {
+        foreach ($language_rows as $row) {
+            $language_code = isset($row['language_code']) ? ahx_wp_wordle_normalize_language_code((string) $row['language_code']) : '';
+            $total = isset($row['total']) ? (int) $row['total'] : 0;
+            if ($language_code === '') {
+                continue;
+            }
+
+            $language_count++;
+            $words_total += max(0, $total);
+            $words_by_language[] = array(
+                'code' => $language_code,
+                'total' => max(0, $total),
+            );
+        }
+    }
+
+    usort($words_by_language, function ($left, $right) {
+        return ((int) $right['total']) <=> ((int) $left['total']);
+    });
+
+    $unknown_total = 0;
+    $unknown_last_24h = 0;
+    if (function_exists('ahx_wp_wordle_unknown_words_table')) {
+        $unknown_table = ahx_wp_wordle_unknown_words_table();
+        $unknown_total = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$unknown_table}");
+        $unknown_last_24h = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$unknown_table} WHERE first_seen_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 24 HOUR)");
+    }
+
+    $last_play_date = '—';
+    if (function_exists('ahx_wp_wordle_history_table')) {
+        $history_table = ahx_wp_wordle_history_table();
+        $max_date = (string) $wpdb->get_var("SELECT MAX(play_date) FROM {$history_table}");
+        if ($max_date !== '') {
+            $last_play_date = $max_date;
+        }
+    }
+
+    $default_language = ahx_wp_wordle_normalize_language_code((string) get_option('ahx_wp_wordle_default_language', 'de_DE'));
+    $today_word = ahx_wp_wordle_get_or_create_daily_word($default_language, gmdate('Y-m-d'));
+    $today_word_display = '—';
+    if (is_array($today_word) && !empty($today_word['word'])) {
+        $today_word_display = ahx_wp_wordle_to_display_word((string) $today_word['word'], $default_language);
+    }
+
+    ?>
+    <style>
+    .ahx-wordle-landing { max-width: 1120px; }
+    .ahx-wordle-landing h1 { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .ahx-wordle-landing .ahx-wordle-subtitle { color: #646970; margin: 0 0 22px; }
+    .ahx-wordle-status-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
+    .ahx-wordle-status-card {
+        flex: 1 1 220px;
+        background: #fff;
+        border: 1px solid #c3c4c7;
+        border-radius: 8px;
+        padding: 16px 18px;
+    }
+    .ahx-wordle-status-card .ahx-wordle-title { font-size: 12px; color: #646970; margin-bottom: 6px; }
+    .ahx-wordle-status-card .ahx-wordle-value { font-size: 22px; font-weight: 700; }
+    .ahx-wordle-feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+    }
+    .ahx-wordle-feature {
+        background: #fff;
+        border: 1px solid #c3c4c7;
+        border-radius: 8px;
+        padding: 18px 20px;
+    }
+    .ahx-wordle-feature h3 { margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+    .ahx-wordle-feature p { margin: 0 0 12px; color: #3c434a; }
+    .ahx-wordle-chip {
+        display: inline-block;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: #edf6ff;
+        color: #0a4b78;
+        font-size: 12px;
+    }
+    </style>
+
+    <div class="wrap ahx-wordle-landing">
+        <h1>
+            <span class="dashicons dashicons-games" style="color:#2271b1;"></span>
+            AHX WP Wordle
+        </h1>
+        <p class="ahx-wordle-subtitle">Zentrale Übersicht für Wordle. Einstellungen findest du jetzt unter Einstellungen -> AHX WP Wordle.</p>
+
+        <div class="ahx-wordle-status-row">
+            <div class="ahx-wordle-status-card">
+                <div class="ahx-wordle-title">Wörter gesamt</div>
+                <div class="ahx-wordle-value"><?php echo esc_html((string) $words_total); ?></div>
+            </div>
+            <div class="ahx-wordle-status-card">
+                <div class="ahx-wordle-title">Sprachen mit Wörtern</div>
+                <div class="ahx-wordle-value"><?php echo esc_html((string) $language_count); ?></div>
+            </div>
+            <div class="ahx-wordle-status-card">
+                <div class="ahx-wordle-title">Getrackte unbekannte Wörter</div>
+                <div class="ahx-wordle-value"><?php echo esc_html((string) $unknown_total); ?></div>
+            </div>
+            <div class="ahx-wordle-status-card">
+                <div class="ahx-wordle-title">Neue unbekannte Wörter (24 h)</div>
+                <div class="ahx-wordle-value"><?php echo esc_html((string) $unknown_last_24h); ?></div>
+            </div>
+            <div class="ahx-wordle-status-card">
+                <div class="ahx-wordle-title">Letzter Spieltag</div>
+                <div class="ahx-wordle-value" style="font-size:18px;"><?php echo esc_html($last_play_date); ?></div>
+            </div>
+            <div class="ahx-wordle-status-card">
+                <div class="ahx-wordle-title">Heutiges Wort (<?php echo esc_html($default_language); ?>)</div>
+                <div class="ahx-wordle-value" style="font-size:18px;"><?php echo esc_html($today_word_display); ?></div>
+            </div>
+        </div>
+
+        <div class="ahx-wordle-feature-grid">
+            <div class="ahx-wordle-feature">
+                <h3><span class="dashicons dashicons-admin-generic"></span>Einstellungen</h3>
+                <p>Konfiguriere Sprache, Versuche, Persistenz, Importe und getrackte Wörter in der WordPress-Einstellungsseite.</p>
+                <a class="button button-primary" href="<?php echo esc_url($settings_url); ?>">Einstellungen öffnen</a>
+            </div>
+
+            <div class="ahx-wordle-feature">
+                <h3><span class="dashicons dashicons-chart-bar"></span>Wörter je Sprache</h3>
+                <p>Aktuelle Verteilung der verfügbaren Wortlisten nach Sprache.</p>
+                <?php if (empty($words_by_language)) : ?>
+                    <p><em>Keine Sprachdaten vorhanden.</em></p>
+                <?php else : ?>
+                    <?php foreach ($words_by_language as $language_item) : ?>
+                        <span class="ahx-wordle-chip">
+                            <?php echo esc_html((string) $language_item['code']); ?>:
+                            <?php echo esc_html((string) $language_item['total']); ?>
+                        </span>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+
+            <div class="ahx-wordle-feature">
+                <h3><span class="dashicons dashicons-editor-code"></span>Shortcodes</h3>
+                <p>Nutze die folgenden Shortcodes in Seiten oder Beiträgen:</p>
+                <span class="ahx-wordle-chip"><?php echo esc_html($shortcode_game); ?></span>
+                <span class="ahx-wordle-chip"><?php echo esc_html($shortcode_stats); ?></span>
+                <span class="ahx-wordle-chip"><?php echo esc_html($shortcode_help); ?></span>
+            </div>
+
+            <div class="ahx-wordle-feature">
+                <h3><span class="dashicons dashicons-welcome-write-blog"></span>Schnellstart</h3>
+                <p>Erstelle eine neue Seite und füge dort den Spiel-Shortcode ein, um Wordle sofort live zu schalten.</p>
+                <a class="button" href="<?php echo esc_url($help_url); ?>">Neue Seite erstellen</a>
+            </div>
+        </div>
+    </div>
+    <?php
+}
+
+function ahx_wp_wordle_add_admin_bar_menu($wp_admin_bar) {
+    if (!is_admin_bar_showing() || !current_user_can('manage_options')) {
+        return;
+    }
+
+    $wp_admin_bar->add_node(array(
+        'id' => 'ahx_wp_wordle_adminbar',
+        'title' => 'AHX Wordle',
+        'href' => admin_url('admin.php?page=ahx-wp-wordle'),
+        'meta' => array(
+            'title' => 'AHX Wordle',
+        ),
+    ));
+}
+add_action('admin_bar_menu', 'ahx_wp_wordle_add_admin_bar_menu', 100);
 
 function ahx_wp_wordle_enqueue_assets() {
     wp_register_style(
@@ -344,6 +582,7 @@ function ahx_wp_wordle_get_i18n_messages($language_code) {
     $messages = array(
         'de' => array(
             'won' => 'Stark! Du hast das Wort gefunden.',
+            'won_with_word' => 'Stark! Du hast das Wort {word} gefunden.',
             'lost' => 'Schade! Das gesuchte Wort war: ',
             'not_in_list' => 'Dieses Wort ist nicht in der Liste.',
             'not_enough_letters' => 'Bitte gib ein vollständiges Wort mit 5 Buchstaben ein.',
@@ -368,6 +607,7 @@ function ahx_wp_wordle_get_i18n_messages($language_code) {
         ),
         'en' => array(
             'won' => 'Great! You found the word.',
+            'won_with_word' => 'Great! You found the word {word}.',
             'lost' => 'Too bad! The word was: ',
             'not_in_list' => 'This word is not in the list.',
             'not_enough_letters' => 'Please enter a full 5-letter word.',
@@ -674,21 +914,82 @@ function ahx_wp_wordle_render_shortcode($atts) {
     ?>
     <?php $selector_id = 'ahx-wordle-language-' . wp_rand(1000, 99999); ?>
     <div class="ahx-wordle" data-cols="5" data-rows="<?php echo esc_attr((string) $rows); ?>">
-        <div class="ahx-wordle__language">
-            <label for="<?php echo esc_attr($selector_id); ?>"><?php echo esc_html((string) $payload['i18n']['language_label']); ?></label>
-            <select id="<?php echo esc_attr($selector_id); ?>" class="ahx-wordle__language-select" aria-label="Wordle Sprache wählen">
-                <?php foreach ($language_options as $option) : ?>
-                    <option value="<?php echo esc_attr((string) $option['code']); ?>" <?php selected($language_code, (string) $option['code']); ?>>
-                        <?php echo esc_html((string) $option['label']); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
         <div class="ahx-wordle__status" aria-live="polite"></div>
         <div class="ahx-wordle__board" role="grid" aria-label="Wordle Spielfeld"></div>
         <div class="ahx-wordle__keyboard" role="group" aria-label="Wordle Tastatur"></div>
         <div class="ahx-wordle__stats"></div>
         <div class="ahx-wordle__countdown"></div>
+        <div class="ahx-wordle__footer">
+            <div class="ahx-wordle__language">
+                <label for="<?php echo esc_attr($selector_id); ?>"><?php echo esc_html((string) $payload['i18n']['language_label']); ?></label>
+                <select id="<?php echo esc_attr($selector_id); ?>" class="ahx-wordle__language-select" aria-label="Wordle Sprache wählen">
+                    <?php foreach ($language_options as $option) : ?>
+                        <option value="<?php echo esc_attr((string) $option['code']); ?>" <?php selected($language_code, (string) $option['code']); ?>>
+                            <?php echo esc_html((string) $option['label']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <button class="ahx-wordle__report-button" id="ahx-wordle-report-btn">
+                <?php echo esc_html(__('Wort melden', 'ahx_wp_wordle')); ?>
+            </button>
+            <button class="ahx-wordle__stats-reset-footer" id="ahx-wordle-stats-reset-footer" style="display:none;">
+                <?php echo esc_html(__('Statistik zurücksetzen', 'ahx_wp_wordle')); ?>
+            </button>
+        </div>
+
+        <div class="ahx-wordle-modal-overlay" id="ahx-wordle-report-modal">
+            <div class="ahx-wordle-modal">
+                <button class="ahx-wordle-modal__close" id="ahx-wordle-report-close">&times;</button>
+                <h3 class="ahx-wordle-modal__title" id="ahx-wordle-modal-title"><?php echo esc_html(__('Lösungswort melden', 'ahx_wp_wordle')); ?></h3>
+                <form id="ahx-wordle-report-form">
+                    <div class="ahx-wordle-modal__reason-group">
+                        <label class="ahx-wordle-modal__reason-label">
+                            <input type="radio" name="reason" value="not_base_form" checked>
+                            <span class="ahx-wordle-modal__reason-text"><?php echo esc_html(__('Nicht in Grundform', 'ahx_wp_wordle')); ?></span>
+                        </label>
+                    </div>
+                    <div class="ahx-wordle-modal__reason-group">
+                        <label class="ahx-wordle-modal__reason-label">
+                            <input type="radio" name="reason" value="not_singular">
+                            <span class="ahx-wordle-modal__reason-text"><?php echo esc_html(__('Nicht singular', 'ahx_wp_wordle')); ?></span>
+                        </label>
+                    </div>
+                    <div class="ahx-wordle-modal__reason-group">
+                        <label class="ahx-wordle-modal__reason-label">
+                            <input type="radio" name="reason" value="invalid">
+                            <span class="ahx-wordle-modal__reason-text"><?php echo esc_html(__('Ungültiges Wort', 'ahx_wp_wordle')); ?></span>
+                        </label>
+                    </div>
+                    <div class="ahx-wordle-modal__reason-group">
+                        <label class="ahx-wordle-modal__reason-label">
+                            <input type="radio" name="reason" value="spelling">
+                            <span class="ahx-wordle-modal__reason-text"><?php echo esc_html(__('Schreibfehler', 'ahx_wp_wordle')); ?></span>
+                        </label>
+                    </div>
+                    <div class="ahx-wordle-modal__reason-group">
+                        <label class="ahx-wordle-modal__reason-label">
+                            <input type="radio" name="reason" value="offensive">
+                            <span class="ahx-wordle-modal__reason-text"><?php echo esc_html(__('Anstößig', 'ahx_wp_wordle')); ?></span>
+                        </label>
+                    </div>
+                    <div class="ahx-wordle-modal__reason-group">
+                        <label class="ahx-wordle-modal__reason-label">
+                            <input type="radio" name="reason" value="other">
+                            <span class="ahx-wordle-modal__reason-text"><?php echo esc_html(__('Sonstiger Grund', 'ahx_wp_wordle')); ?></span>
+                        </label>
+                    </div>
+                    <div class="ahx-wordle-modal__actions">
+                        <button type="button" id="ahx-wordle-report-cancel" class="ahx-wordle-modal__button ahx-wordle-modal__button--secondary">
+                            <?php echo esc_html(__('Abbrechen', 'ahx_wp_wordle')); ?>
+                        </button>
+                        <button type="submit" class="ahx-wordle-modal__button ahx-wordle-modal__button--primary">
+                            <?php echo esc_html(__('Melden', 'ahx_wp_wordle')); ?>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
     <?php
 
