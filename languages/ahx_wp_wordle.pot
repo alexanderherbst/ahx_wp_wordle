@@ -1,10 +1,58 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ahx_wp_wordle\n"
-"POT-Creation-Date: 2026-04-12 10:52+0000\n"
+"POT-Creation-Date: 2026-05-25 14:11+0000\n"
 "MIME-Version: 1.0\n\"\n"Content-Type: text/plain; charset=UTF-8\n\"\n"Content-Transfer-Encoding: 8bit\n\"\n
 #: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
 msgid "AHX WP Wordle Einstellungen"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Abbrechen"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Aktion"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Aktuelle Verteilung der verfügbaren Wortlisten nach Sprache."
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Alle auswählen"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Anstößig"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Anzeigen"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Ausgewählte Wörter wirklich löschen?"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Ausgewählte Wörter wirklich verwerfen?"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Ausgewählte gemeldete Wörter wirklich löschen?"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Ausgewählte in Wortliste übernehmen"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Ausgewählte löschen"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Ausgewählte verwerfen"
 msgstr ""
 
 #: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
@@ -28,15 +76,119 @@ msgid "Die letzte verbleibende Sprache kann nicht gelöscht werden."
 msgstr ""
 
 #: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Diese Meldung wirklich löschen?"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Diese Sprache wird standardmäßig genutzt, wenn im Shortcode kein <code>lang</code> gesetzt ist.</p>"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Einstellungen"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Einstellungen öffnen"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Erstelle eine neue Seite und füge dort den Spiel-Shortcode ein, um Wordle sofort live zu schalten."
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Erstmalig"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
 msgid "Es wird das erste Feld je Zeile gelesen. Erlaubt sind genau 5 Buchstaben gemäß gewählter Sprache (für Deutsch inkl. ä, ö, ü, ß). Dubletten werden nicht erneut importiert."
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Gemeldete Lösungswörter"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Gemeldete Wort-Meldung gelöscht."
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Getrackte unbekannte Wörter"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Grund"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Keine Sprachdaten vorhanden."
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Keine Wörter für die gewählte Sprache vorhanden."
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Keine gemeldeten Wörter für die gewählte Sprache vorhanden."
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Keine getrackten Wörter für die gewählte Sprache vorhanden."
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Konfiguriere Sprache, Versuche, Persistenz, Importe und getrackte Wörter in der WordPress-Einstellungsseite."
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Letzter Spieltag"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Lösungswort melden"
 msgstr ""
 
 #: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
 msgid "Mehrere Wörter möglich, getrennt durch Zeilenumbrüche, Leerzeichen, Kommas oder Semikolons. Es werden nur gültige Wörter mit 5 Buchstaben importiert."
 msgstr ""
 
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Melden"
+msgstr ""
+
 #: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
-msgid "Shortcode:"
+msgid "Meldungen"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Neue Seite erstellen"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Nicht in Grundform"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Nicht singular"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Nutze die folgenden Shortcodes in Seiten oder Beiträgen:"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Schnellstart"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Schreibfehler"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Shortcodes"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Sonstiger Grund"
 msgstr ""
 
 #: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
@@ -52,6 +204,14 @@ msgid "Sprache überschreiben:"
 msgstr ""
 
 #: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Sprache:"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Sprachen mit Wörtern"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
 msgid "Sprachverwaltung"
 msgstr ""
 
@@ -59,11 +219,55 @@ msgstr ""
 msgid "Statistik"
 msgstr ""
 
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Statistik zurücksetzen"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Ungültiges Wort"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Vorkommen"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Wort"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Wort melden"
+msgstr ""
+
 #: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
 msgid "Wörter"
 msgstr ""
 
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Wörter gesamt"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/ahx_wp_wordle.php
+msgid "Wörter je Sprache"
+msgstr ""
+
 #: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
 msgid "Wörter per Textfeld importieren"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Wörter pro Sprache verwalten"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Wörter: %d"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "Zuletzt"
+msgstr ""
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_wordle/admin/config-page.php
+msgid "×"
 msgstr ""
 

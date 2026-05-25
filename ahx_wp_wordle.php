@@ -2,7 +2,7 @@
 /*
 Plugin Name: AHX WP Wordle
 Description: Stellt ein Wordle-Spiel als Shortcode bereit.
-Version: v2.0.0
+Version: v2.0.1
 Author: AHX
 Text Domain: ahx_wp_wordle
 Domain Path: /languages
@@ -476,15 +476,15 @@ function ahx_wp_wordle_landing_page() {
 
         <div class="ahx-wordle-status-row">
             <div class="ahx-wordle-status-card">
-                <div class="ahx-wordle-title">Wörter gesamt</div>
+                <div class="ahx-wordle-title"><?php echo esc_html__('Wörter gesamt', 'ahx_wp_wordle'); ?></div>
                 <div class="ahx-wordle-value"><?php echo esc_html((string) $words_total); ?></div>
             </div>
             <div class="ahx-wordle-status-card">
-                <div class="ahx-wordle-title">Sprachen mit Wörtern</div>
+                <div class="ahx-wordle-title"><?php echo esc_html__('Sprachen mit Wörtern', 'ahx_wp_wordle'); ?></div>
                 <div class="ahx-wordle-value"><?php echo esc_html((string) $language_count); ?></div>
             </div>
             <div class="ahx-wordle-status-card">
-                <div class="ahx-wordle-title">Getrackte unbekannte Wörter</div>
+                <div class="ahx-wordle-title"><?php echo esc_html__('Getrackte unbekannte Wörter', 'ahx_wp_wordle'); ?></div>
                 <div class="ahx-wordle-value"><?php echo esc_html((string) $unknown_total); ?></div>
             </div>
             <div class="ahx-wordle-status-card">
@@ -492,7 +492,7 @@ function ahx_wp_wordle_landing_page() {
                 <div class="ahx-wordle-value"><?php echo esc_html((string) $unknown_last_24h); ?></div>
             </div>
             <div class="ahx-wordle-status-card">
-                <div class="ahx-wordle-title">Letzter Spieltag</div>
+                <div class="ahx-wordle-title"><?php echo esc_html__('Letzter Spieltag', 'ahx_wp_wordle'); ?></div>
                 <div class="ahx-wordle-value" style="font-size:18px;"><?php echo esc_html($last_play_date); ?></div>
             </div>
             <div class="ahx-wordle-status-card">
@@ -503,16 +503,16 @@ function ahx_wp_wordle_landing_page() {
 
         <div class="ahx-wordle-feature-grid">
             <div class="ahx-wordle-feature">
-                <h3><span class="dashicons dashicons-admin-generic"></span>Einstellungen</h3>
-                <p>Konfiguriere Sprache, Versuche, Persistenz, Importe und getrackte Wörter in der WordPress-Einstellungsseite.</p>
-                <a class="button button-primary" href="<?php echo esc_url($settings_url); ?>">Einstellungen öffnen</a>
+                <h3><span class="dashicons dashicons-admin-generic"></span><?php echo esc_html__('Einstellungen', 'ahx_wp_wordle'); ?></h3>
+                <p><?php echo esc_html__('Konfiguriere Sprache, Versuche, Persistenz, Importe und getrackte Wörter in der WordPress-Einstellungsseite.', 'ahx_wp_wordle'); ?></p>
+                <a class="button button-primary" href="<?php echo esc_url($settings_url); ?>"><?php echo esc_html__('Einstellungen öffnen', 'ahx_wp_wordle'); ?></a>
             </div>
 
             <div class="ahx-wordle-feature">
-                <h3><span class="dashicons dashicons-chart-bar"></span>Wörter je Sprache</h3>
-                <p>Aktuelle Verteilung der verfügbaren Wortlisten nach Sprache.</p>
+                <h3><span class="dashicons dashicons-chart-bar"></span><?php echo esc_html__('Wörter je Sprache', 'ahx_wp_wordle'); ?></h3>
+                <p><?php echo esc_html__('Aktuelle Verteilung der verfügbaren Wortlisten nach Sprache.', 'ahx_wp_wordle'); ?></p>
                 <?php if (empty($words_by_language)) : ?>
-                    <p><em>Keine Sprachdaten vorhanden.</em></p>
+                    <p><em><?php echo esc_html__('Keine Sprachdaten vorhanden.', 'ahx_wp_wordle'); ?></em></p>
                 <?php else : ?>
                     <?php foreach ($words_by_language as $language_item) : ?>
                         <span class="ahx-wordle-chip">
@@ -524,17 +524,17 @@ function ahx_wp_wordle_landing_page() {
             </div>
 
             <div class="ahx-wordle-feature">
-                <h3><span class="dashicons dashicons-editor-code"></span>Shortcodes</h3>
-                <p>Nutze die folgenden Shortcodes in Seiten oder Beiträgen:</p>
+                <h3><span class="dashicons dashicons-editor-code"></span><?php echo esc_html__('Shortcodes', 'ahx_wp_wordle'); ?></h3>
+                <p><?php echo esc_html__('Nutze die folgenden Shortcodes in Seiten oder Beiträgen:', 'ahx_wp_wordle'); ?></p>
                 <span class="ahx-wordle-chip"><?php echo esc_html($shortcode_game); ?></span>
                 <span class="ahx-wordle-chip"><?php echo esc_html($shortcode_stats); ?></span>
                 <span class="ahx-wordle-chip"><?php echo esc_html($shortcode_help); ?></span>
             </div>
 
             <div class="ahx-wordle-feature">
-                <h3><span class="dashicons dashicons-welcome-write-blog"></span>Schnellstart</h3>
-                <p>Erstelle eine neue Seite und füge dort den Spiel-Shortcode ein, um Wordle sofort live zu schalten.</p>
-                <a class="button" href="<?php echo esc_url($help_url); ?>">Neue Seite erstellen</a>
+                <h3><span class="dashicons dashicons-welcome-write-blog"></span><?php echo esc_html__('Schnellstart', 'ahx_wp_wordle'); ?></h3>
+                <p><?php echo esc_html__('Erstelle eine neue Seite und füge dort den Spiel-Shortcode ein, um Wordle sofort live zu schalten.', 'ahx_wp_wordle'); ?></p>
+                <a class="button" href="<?php echo esc_url($help_url); ?>"><?php echo esc_html__('Neue Seite erstellen', 'ahx_wp_wordle'); ?></a>
             </div>
         </div>
     </div>

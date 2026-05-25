@@ -1151,7 +1151,7 @@ function ahx_wp_wordle_default_language_field() {
         echo '<option value="' . esc_attr($language_code) . '" ' . selected($value, $language_code, false) . '>' . esc_html($language_code) . '</option>';
     }
     echo '</select>';
-    echo '<p class="description">Diese Sprache wird standardmäßig genutzt, wenn im Shortcode kein <code>lang</code> gesetzt ist.</p>';
+    echo '<p class="description">' . esc_html__('Diese Sprache wird standardmäßig genutzt, wenn im Shortcode kein <code>lang</code> gesetzt ist.</p>', 'ahx_wp_wordle');
 }
 
 function ahx_wp_wordle_persistence_mode_field() {
@@ -1301,7 +1301,7 @@ function ahx_wp_wordle_settings_page() {
 
         <table class="wp-list-table widefat fixed striped" style="max-width: 700px; margin-bottom: 20px;">
             <thead>
-                <tr><th>Sprache</th><th>Wörter</th><th><?php echo esc_html__('Statistik', 'ahx_wp_wordle'); ?></th><th>Aktion</th></tr>
+                <tr><th><?php echo esc_html__('Sprache', 'ahx_wp_wordle'); ?></th><th><?php echo esc_html__('Wörter', 'ahx_wp_wordle'); ?></th><th><?php echo esc_html__('Statistik', 'ahx_wp_wordle'); ?></th><th><?php echo esc_html__('Aktion', 'ahx_wp_wordle'); ?></th></tr>
             </thead>
             <tbody>
             <?php foreach ($possible_languages as $language_code) : ?>
