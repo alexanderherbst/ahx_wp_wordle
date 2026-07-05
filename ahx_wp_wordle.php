@@ -2,7 +2,7 @@
 /*
 Plugin Name: AHX WP Wordle
 Description: Stellt ein Wordle-Spiel als Shortcode bereit.
-Version: v2.0.1
+Version: v2.1.0
 Author: AHX
 Text Domain: ahx_wp_wordle
 Domain Path: /languages
@@ -587,6 +587,7 @@ function ahx_wp_wordle_get_i18n_messages($language_code) {
             'not_in_list' => 'Dieses Wort ist nicht in der Liste.',
             'not_enough_letters' => 'Bitte gib ein vollständiges Wort mit 5 Buchstaben ein.',
             'language_label' => 'Sprache:',
+            'language_label_short' => 'Sprache',
             'stats_title' => 'Statistik',
             'stats_played' => 'Gespielte Spiele',
             'stats_longest_streak' => 'Längste Siegesfolge',
@@ -599,6 +600,8 @@ function ahx_wp_wordle_get_i18n_messages($language_code) {
             'stats_attempts_col_rel' => 'Relativ',
             'countdown_label' => 'Nächstes Rätsel in',
             'stats_reset' => 'Statistik zurücksetzen',
+            'stats_reset_short' => 'Reset',
+            'report_word_short' => 'Melden',
             'stats_reset_confirm' => 'Möchtest du die Statistik für diese Sprache wirklich zurücksetzen?',
             'add_word_button' => 'Wort hinzufügen',
             'add_word_prompt' => 'Dieses Wort ist nicht in der Liste. Als Administrator kannst du es hinzufügen.',
@@ -612,6 +615,7 @@ function ahx_wp_wordle_get_i18n_messages($language_code) {
             'not_in_list' => 'This word is not in the list.',
             'not_enough_letters' => 'Please enter a full 5-letter word.',
             'language_label' => 'Language:',
+            'language_label_short' => 'Lang.',
             'stats_title' => 'Statistics',
             'stats_played' => 'Played games',
             'stats_longest_streak' => 'Longest win streak',
@@ -624,6 +628,8 @@ function ahx_wp_wordle_get_i18n_messages($language_code) {
             'stats_attempts_col_rel' => 'Relative',
             'countdown_label' => 'Next puzzle in',
             'stats_reset' => 'Reset statistics',
+            'stats_reset_short' => 'Reset',
+            'report_word_short' => 'Report',
             'stats_reset_confirm' => 'Do you really want to reset the statistics for this language?',
             'add_word_button' => 'Add word',
             'add_word_prompt' => 'This word is not in the list. As an admin you can add it.',
@@ -636,6 +642,9 @@ function ahx_wp_wordle_get_i18n_messages($language_code) {
             'not_in_list' => 'Ce mot n\'est pas dans la liste.',
             'not_enough_letters' => 'Veuillez saisir un mot complet de 5 lettres.',
             'language_label' => 'Langue :',
+            'language_label_short' => 'Langue',
+            'stats_reset_short' => 'Reset',
+            'report_word_short' => 'Signaler',
         ),
         'es' => array(
             'won' => '¡Genial! Has encontrado la palabra.',
@@ -643,6 +652,9 @@ function ahx_wp_wordle_get_i18n_messages($language_code) {
             'not_in_list' => 'Esta palabra no está en la lista.',
             'not_enough_letters' => 'Introduce una palabra completa de 5 letras.',
             'language_label' => 'Idioma:',
+            'language_label_short' => 'Idioma',
+            'stats_reset_short' => 'Reset',
+            'report_word_short' => 'Reportar',
         ),
         'it' => array(
             'won' => 'Ottimo! Hai trovato la parola.',
@@ -650,6 +662,9 @@ function ahx_wp_wordle_get_i18n_messages($language_code) {
             'not_in_list' => 'Questa parola non è nella lista.',
             'not_enough_letters' => 'Inserisci una parola completa di 5 lettere.',
             'language_label' => 'Lingua:',
+            'language_label_short' => 'Lingua',
+            'stats_reset_short' => 'Reset',
+            'report_word_short' => 'Segnala',
         ),
     );
 

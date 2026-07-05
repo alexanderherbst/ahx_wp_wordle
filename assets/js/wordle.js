@@ -707,6 +707,35 @@
         });
     }
 
+    function scrollToStatsView() {
+        if (!statsEl || typeof statsEl.scrollIntoView !== 'function') {
+            return;
+        }
+
+        window.requestAnimationFrame(function () {
+            statsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
+
+    function applyPostGameFooterLabels() {
+        var i18n = config.i18n || {};
+        var languageLabelEl = root.querySelector('.ahx-wordle__language label');
+        var reportBtn = root.querySelector('#ahx-wordle-report-btn');
+        var resetFooterBtn = root.querySelector('#ahx-wordle-stats-reset-footer');
+
+        if (languageLabelEl) {
+            languageLabelEl.textContent = String(i18n.language_label_short || i18n.language_label || languageLabelEl.textContent || 'Sprache');
+        }
+
+        if (reportBtn) {
+            reportBtn.textContent = String(i18n.report_word_short || reportBtn.textContent || 'Melden');
+        }
+
+        if (resetFooterBtn) {
+            resetFooterBtn.textContent = String(i18n.stats_reset_short || i18n.stats_reset || resetFooterBtn.textContent || 'Reset');
+        }
+    }
+
     function finish(win, options) {
         options = options || {};
         var hideGameArea = !!options.hideGameArea;
@@ -716,6 +745,9 @@
         renderCurrentGuess();
 
         if (hideGameArea) {
+            root.classList.add('ahx-wordle--post-game-stats');
+            applyPostGameFooterLabels();
+
             var gameViewRoot = root.closest('.ahx-wordle-view--game');
             if (gameViewRoot) {
                 if (boardEl) {
@@ -732,8 +764,10 @@
 
             var reportBtn = root.querySelector('#ahx-wordle-report-btn');
             var resetFooterBtn = root.querySelector('#ahx-wordle-stats-reset-footer');
-            if (reportBtn) reportBtn.style.display = 'none';
+            if (reportBtn) reportBtn.style.display = '';
             if (resetFooterBtn) resetFooterBtn.style.display = '';
+
+            scrollToStatsView();
         }
 
         if (win) {
@@ -748,6 +782,8 @@
                 if (statsEl) {
                     statsEl.style.display = 'block';
                 }
+
+                scrollToStatsView();
             });
         }
     }
@@ -1172,7 +1208,7 @@
     applySavedGuesses();
     renderCurrentGuess();
 
-    // If rendered via [ahx_wordle_stats] shortcode, immediately show reset button instead of report button
+    // If rendered via [ahx_wordle_stats] shortcode, show reset button and hide report button
     if (root.closest('.ahx-wordle-view--stats')) {
         var reportBtn = root.querySelector('#ahx-wordle-report-btn');
         var resetFooterBtn = root.querySelector('#ahx-wordle-stats-reset-footer');

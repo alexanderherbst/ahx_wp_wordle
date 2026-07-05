@@ -543,7 +543,38 @@
     flex-wrap: wrap;
 }
 
-.ahx-wordle__report-button {
+.ahx-wordle--post-game-stats .ahx-wordle__footer {
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 8px;
+    overflow-x: auto;
+}
+
+.ahx-wordle--post-game-stats .ahx-wordle__language {
+    flex: 0 1 auto;
+    min-width: max-content;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.ahx-wordle--post-game-stats .ahx-wordle__language label {
+    white-space: nowrap;
+}
+
+.ahx-wordle--post-game-stats .ahx-wordle__language-select {
+    min-width: 96px;
+    padding: 3px 6px;
+    font-size: 12px;
+}
+
+.ahx-wordle__report-button,
+.ahx-wordle__stats-reset-footer {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    white-space: nowrap;
     background: #f3f4f6;
     border: 1px solid #d1d5db;
     border-radius: 6px;
@@ -555,11 +586,19 @@
     transition: background-color 0.2s ease;
 }
 
-.ahx-wordle__report-button:hover {
+.ahx-wordle--post-game-stats .ahx-wordle__report-button,
+.ahx-wordle--post-game-stats .ahx-wordle__stats-reset-footer {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.ahx-wordle__report-button:hover,
+.ahx-wordle__stats-reset-footer:hover {
     background: #e5e7eb;
 }
 
-.ahx-wordle__report-button:active {
+.ahx-wordle__report-button:active,
+.ahx-wordle__stats-reset-footer:active {
     background: #d1d5db;
 }
 
