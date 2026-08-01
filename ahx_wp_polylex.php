@@ -1,10 +1,10 @@
 <?php
 /*
-Plugin Name: AHX WP Wordle
-Description: Stellt ein Wordle-Spiel als Shortcode bereit.
-Version: v2.1.0
+Plugin Name: AHX WP PolyLex
+Description: Stellt ein PolyLex-Spiel als Shortcode bereit.
+Version: v2.2.0
 Author: AHX
-Text Domain: ahx_wp_wordle
+Text Domain: ahx_wp_polylex
 Domain Path: /languages
 */
 
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-function ahx_wp_wordle_try_load_core() {
+function ahx_wp_polylex_try_load_core() {
     $core_file = WP_PLUGIN_DIR . '/ahx_wp_core/ahx_wp_core.php';
     if (file_exists($core_file)) {
         require_once $core_file;
@@ -22,31 +22,31 @@ function ahx_wp_wordle_try_load_core() {
     return false;
 }
 
-ahx_wp_wordle_try_load_core();
+ahx_wp_polylex_try_load_core();
 
 require_once plugin_dir_path(__FILE__) . 'admin/config-page.php';
 
-function ahx_wp_wordle_load_textdomain() {
-    load_plugin_textdomain('ahx_wp_wordle', false, dirname(plugin_basename(__FILE__)) . '/languages');
+function ahx_wp_polylex_load_textdomain() {
+    load_plugin_textdomain('ahx_wp_polylex', false, dirname(plugin_basename(__FILE__)) . '/languages');
 }
 
-function ahx_wp_wordle_activate() {
-    ahx_wp_wordle_install_tables();
-    ahx_wp_wordle_seed_default_words();
-    ahx_wp_wordle_maybe_migrate_legacy_words();
-    ahx_wp_wordle_cleanup_legacy_options();
+function ahx_wp_polylex_activate() {
+    ahx_wp_polylex_install_tables();
+    ahx_wp_polylex_seed_default_words();
+    ahx_wp_polylex_maybe_migrate_legacy_words();
+    ahx_wp_polylex_cleanup_legacy_options();
 }
-register_activation_hook(__FILE__, 'ahx_wp_wordle_activate');
+register_activation_hook(__FILE__, 'ahx_wp_polylex_activate');
 
-function ahx_wp_wordle_bootstrap() {
-    ahx_wp_wordle_install_tables();
-    ahx_wp_wordle_seed_default_words();
-    ahx_wp_wordle_maybe_migrate_legacy_words();
-    ahx_wp_wordle_cleanup_legacy_options();
+function ahx_wp_polylex_bootstrap() {
+    ahx_wp_polylex_install_tables();
+    ahx_wp_polylex_seed_default_words();
+    ahx_wp_polylex_maybe_migrate_legacy_words();
+    ahx_wp_polylex_cleanup_legacy_options();
 }
 
 if (class_exists('AHX_Core_Plugin_Base')) {
-    class AHX_WP_Wordle_Plugin extends AHX_Core_Plugin_Base {
+    class AHX_WP_PolyLex_Plugin extends AHX_Core_Plugin_Base {
 
         protected function register_hooks() {
             $this->add_action('plugins_loaded', 'load_textdomain');
@@ -54,45 +54,45 @@ if (class_exists('AHX_Core_Plugin_Base')) {
         }
 
         public function load_textdomain() {
-            ahx_wp_wordle_load_textdomain();
+            ahx_wp_polylex_load_textdomain();
         }
 
         public function bootstrap_runtime() {
-            ahx_wp_wordle_bootstrap();
-            $this->log('debug', 'Wordle wurde ueber AHX Core initialisiert.');
+            ahx_wp_polylex_bootstrap();
+            $this->log('debug', 'PolyLex wurde ueber AHX Core initialisiert.');
         }
     }
 
-    AHX_WP_Wordle_Plugin::boot(array(
+    AHX_WP_PolyLex_Plugin::boot(array(
         'plugin_file' => __FILE__,
-        'plugin_slug' => 'ahx_wp_wordle',
-        'log_source' => 'ahx_wp_wordle',
+        'plugin_slug' => 'ahx_wp_polylex',
+        'log_source' => 'ahx_wp_polylex',
     ));
 } else {
-    add_action('plugins_loaded', 'ahx_wp_wordle_load_textdomain');
-    add_action('plugins_loaded', 'ahx_wp_wordle_bootstrap');
+    add_action('plugins_loaded', 'ahx_wp_polylex_load_textdomain');
+    add_action('plugins_loaded', 'ahx_wp_polylex_bootstrap');
 }
 
-function ahx_wp_wordle_cleanup_legacy_options() {
-    if (get_option('ahx_wp_wordle_legacy_cleanup_done', '0') === '1') {
+function ahx_wp_polylex_cleanup_legacy_options() {
+    if (get_option('ahx_wp_polylex_legacy_cleanup_done', '0') === '1') {
         return;
     }
 
-    delete_option('ahx_wp_wordle_title');
-    update_option('ahx_wp_wordle_legacy_cleanup_done', '1', false);
+    delete_option('ahx_wp_polylex_title');
+    update_option('ahx_wp_polylex_legacy_cleanup_done', '1', false);
 }
 
-function ahx_wp_wordle_get_storage_map() {
+function ahx_wp_polylex_get_storage_map() {
     $storage = array();
 
     if (is_user_logged_in()) {
         $user_id = get_current_user_id();
-        $meta = get_user_meta($user_id, 'ahx_wp_wordle_state', true);
+        $meta = get_user_meta($user_id, 'ahx_wp_polylex_state', true);
         if (is_array($meta)) {
             $storage = $meta;
         }
     } else {
-        $cookie = isset($_COOKIE['ahx_wp_wordle_state']) ? wp_unslash((string) $_COOKIE['ahx_wp_wordle_state']) : '';
+        $cookie = isset($_COOKIE['ahx_wp_polylex_state']) ? wp_unslash((string) $_COOKIE['ahx_wp_polylex_state']) : '';
         if ($cookie !== '') {
             $decoded = json_decode($cookie, true);
             if (is_array($decoded)) {
@@ -104,7 +104,7 @@ function ahx_wp_wordle_get_storage_map() {
     return is_array($storage) ? $storage : array();
 }
 
-function ahx_wp_wordle_get_max_storage_entries() {
+function ahx_wp_polylex_get_max_storage_entries() {
     if (is_user_logged_in()) {
         return 400;
     }
@@ -112,14 +112,14 @@ function ahx_wp_wordle_get_max_storage_entries() {
     return 45;
 }
 
-function ahx_wp_wordle_save_storage_map($storage) {
+function ahx_wp_polylex_save_storage_map($storage) {
     if (!is_array($storage)) {
         return;
     }
 
     if (is_user_logged_in()) {
         $user_id = get_current_user_id();
-        update_user_meta($user_id, 'ahx_wp_wordle_state', $storage);
+        update_user_meta($user_id, 'ahx_wp_polylex_state', $storage);
         return;
     }
 
@@ -131,10 +131,10 @@ function ahx_wp_wordle_save_storage_map($storage) {
     $path = defined('COOKIEPATH') && COOKIEPATH ? COOKIEPATH : '/';
     $domain = defined('COOKIE_DOMAIN') ? COOKIE_DOMAIN : '';
 
-    setcookie('ahx_wp_wordle_state', $encoded, time() + YEAR_IN_SECONDS, $path, $domain, is_ssl(), true);
+    setcookie('ahx_wp_polylex_state', $encoded, time() + YEAR_IN_SECONDS, $path, $domain, is_ssl(), true);
 }
 
-function ahx_wp_wordle_normalize_guess_list($guesses_raw, $language_code = 'de_DE') {
+function ahx_wp_polylex_normalize_guess_list($guesses_raw, $language_code = 'de_DE') {
     $decoded = json_decode((string) $guesses_raw, true);
     if (!is_array($decoded)) {
         return array();
@@ -146,7 +146,7 @@ function ahx_wp_wordle_normalize_guess_list($guesses_raw, $language_code = 'de_D
             continue;
         }
 
-        $word = ahx_wp_wordle_normalize_single_word($guess, $language_code);
+        $word = ahx_wp_polylex_normalize_single_word($guess, $language_code);
         if ($word === '') {
             continue;
         }
@@ -160,8 +160,8 @@ function ahx_wp_wordle_normalize_guess_list($guesses_raw, $language_code = 'de_D
     return $normalized;
 }
 
-function ahx_wp_wordle_get_saved_guesses_for_day($day_key) {
-    $storage = ahx_wp_wordle_get_storage_map();
+function ahx_wp_polylex_get_saved_guesses_for_day($day_key) {
+    $storage = ahx_wp_polylex_get_storage_map();
     if (!isset($storage[$day_key]) || !is_array($storage[$day_key])) {
         return array();
     }
@@ -169,7 +169,7 @@ function ahx_wp_wordle_get_saved_guesses_for_day($day_key) {
     $language_code = 'de_DE';
     if (is_string($day_key) && strpos($day_key, '|') !== false) {
         $parts = explode('|', $day_key);
-        $language_code = ahx_wp_wordle_normalize_language_code((string) end($parts));
+        $language_code = ahx_wp_polylex_normalize_language_code((string) end($parts));
     }
 
     $guesses = array();
@@ -177,7 +177,7 @@ function ahx_wp_wordle_get_saved_guesses_for_day($day_key) {
         if (!is_string($guess)) {
             continue;
         }
-        $word = ahx_wp_wordle_normalize_single_word($guess, $language_code);
+        $word = ahx_wp_polylex_normalize_single_word($guess, $language_code);
         if ($word !== '') {
             $guesses[] = $word;
         }
@@ -186,11 +186,11 @@ function ahx_wp_wordle_get_saved_guesses_for_day($day_key) {
     return $guesses;
 }
 
-add_action('wp_ajax_ahx_wp_wordle_save_state', 'ahx_wp_wordle_save_state');
-add_action('wp_ajax_nopriv_ahx_wp_wordle_save_state', 'ahx_wp_wordle_save_state');
-function ahx_wp_wordle_save_state() {
+add_action('wp_ajax_ahx_wp_polylex_save_state', 'ahx_wp_polylex_save_state');
+add_action('wp_ajax_nopriv_ahx_wp_polylex_save_state', 'ahx_wp_polylex_save_state');
+function ahx_wp_polylex_save_state() {
     $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
-    if (!wp_verify_nonce($nonce, 'ahx_wp_wordle_state')) {
+    if (!wp_verify_nonce($nonce, 'ahx_wp_polylex_state')) {
         wp_send_json_error(array('message' => 'Ungültiger Nonce'), 403);
     }
 
@@ -200,27 +200,27 @@ function ahx_wp_wordle_save_state() {
     }
 
     $parts = explode('|', $puzzle_key);
-    $language_code = ahx_wp_wordle_normalize_language_code((string) end($parts));
+    $language_code = ahx_wp_polylex_normalize_language_code((string) end($parts));
 
-    $guesses = ahx_wp_wordle_normalize_guess_list(wp_unslash($_POST['guesses'] ?? '[]'), $language_code);
+    $guesses = ahx_wp_polylex_normalize_guess_list(wp_unslash($_POST['guesses'] ?? '[]'), $language_code);
 
-    $storage = ahx_wp_wordle_get_storage_map();
+    $storage = ahx_wp_polylex_get_storage_map();
     $storage[$puzzle_key] = $guesses;
 
-    $max_storage_entries = ahx_wp_wordle_get_max_storage_entries();
+    $max_storage_entries = ahx_wp_polylex_get_max_storage_entries();
     if (count($storage) > $max_storage_entries) {
         ksort($storage);
         $storage = array_slice($storage, -$max_storage_entries, null, true);
     }
 
-    ahx_wp_wordle_save_storage_map($storage);
+    ahx_wp_polylex_save_storage_map($storage);
     wp_send_json_success(array('saved' => true));
 }
 
-add_action('wp_ajax_ahx_wp_wordle_add_word', 'ahx_wp_wordle_add_word');
-function ahx_wp_wordle_add_word() {
+add_action('wp_ajax_ahx_wp_polylex_add_word', 'ahx_wp_polylex_add_word');
+function ahx_wp_polylex_add_word() {
     $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
-    if (!wp_verify_nonce($nonce, 'ahx_wp_wordle_state')) {
+    if (!wp_verify_nonce($nonce, 'ahx_wp_polylex_state')) {
         wp_send_json_error(array('message' => 'Ungültiger Nonce'), 403);
     }
 
@@ -228,28 +228,28 @@ function ahx_wp_wordle_add_word() {
         wp_send_json_error(array('message' => 'Keine Berechtigung'), 403);
     }
 
-    $language_code = ahx_wp_wordle_normalize_language_code(wp_unslash($_POST['language'] ?? 'de_DE'));
-    $word = ahx_wp_wordle_normalize_single_word(wp_unslash($_POST['word'] ?? ''), $language_code);
+    $language_code = ahx_wp_polylex_normalize_language_code(wp_unslash($_POST['language'] ?? 'de_DE'));
+    $word = ahx_wp_polylex_normalize_single_word(wp_unslash($_POST['word'] ?? ''), $language_code);
 
     if ($word === '') {
         wp_send_json_error(array('message' => 'Ungültiges Wort'), 400);
     }
 
-    $insert_result = ahx_wp_wordle_insert_words($language_code, array($word));
+    $insert_result = ahx_wp_polylex_insert_words($language_code, array($word));
 
     wp_send_json_success(array(
         'word' => $word,
-        'displayWord' => ahx_wp_wordle_to_display_word($word, $language_code),
+        'displayWord' => ahx_wp_polylex_to_display_word($word, $language_code),
         'inserted' => ((int) ($insert_result['inserted'] ?? 0)) > 0,
         'alreadyExists' => ((int) ($insert_result['duplicates'] ?? 0)) > 0,
     ));
 }
 
-add_action('wp_ajax_ahx_wp_wordle_track_unknown_word', 'ahx_wp_wordle_track_unknown_word');
-add_action('wp_ajax_nopriv_ahx_wp_wordle_track_unknown_word', 'ahx_wp_wordle_track_unknown_word');
-function ahx_wp_wordle_track_unknown_word() {
+add_action('wp_ajax_ahx_wp_polylex_track_unknown_word', 'ahx_wp_polylex_track_unknown_word');
+add_action('wp_ajax_nopriv_ahx_wp_polylex_track_unknown_word', 'ahx_wp_polylex_track_unknown_word');
+function ahx_wp_polylex_track_unknown_word() {
     $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
-    if (!wp_verify_nonce($nonce, 'ahx_wp_wordle_state')) {
+    if (!wp_verify_nonce($nonce, 'ahx_wp_polylex_state')) {
         wp_send_json_error(array('message' => 'Ungültiger Nonce'), 403);
     }
 
@@ -257,28 +257,28 @@ function ahx_wp_wordle_track_unknown_word() {
         wp_send_json_success(array('tracked' => false, 'reason' => 'admin_excluded'));
     }
 
-    $language_code = ahx_wp_wordle_normalize_language_code(wp_unslash($_POST['language'] ?? 'de_DE'));
-    $word = ahx_wp_wordle_normalize_single_word(wp_unslash($_POST['word'] ?? ''), $language_code);
+    $language_code = ahx_wp_polylex_normalize_language_code(wp_unslash($_POST['language'] ?? 'de_DE'));
+    $word = ahx_wp_polylex_normalize_single_word(wp_unslash($_POST['word'] ?? ''), $language_code);
 
     if ($word === '') {
         wp_send_json_error(array('message' => 'Ungültiges Wort'), 400);
     }
 
-    $tracked = ahx_wp_wordle_track_unknown_word_entry($language_code, $word);
+    $tracked = ahx_wp_polylex_track_unknown_word_entry($language_code, $word);
     wp_send_json_success(array('tracked' => (bool) $tracked));
 }
 
-add_action('wp_ajax_ahx_wp_wordle_reset_stats', 'ahx_wp_wordle_reset_stats');
-add_action('wp_ajax_nopriv_ahx_wp_wordle_reset_stats', 'ahx_wp_wordle_reset_stats');
-function ahx_wp_wordle_reset_stats() {
+add_action('wp_ajax_ahx_wp_polylex_reset_stats', 'ahx_wp_polylex_reset_stats');
+add_action('wp_ajax_nopriv_ahx_wp_polylex_reset_stats', 'ahx_wp_polylex_reset_stats');
+function ahx_wp_polylex_reset_stats() {
     $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
-    if (!wp_verify_nonce($nonce, 'ahx_wp_wordle_state')) {
+    if (!wp_verify_nonce($nonce, 'ahx_wp_polylex_state')) {
         wp_send_json_error(array('message' => 'Ungültiger Nonce'), 403);
     }
 
-    $language_code = ahx_wp_wordle_normalize_language_code(wp_unslash($_POST['language'] ?? 'de_DE'));
+    $language_code = ahx_wp_polylex_normalize_language_code(wp_unslash($_POST['language'] ?? 'de_DE'));
 
-    $storage = ahx_wp_wordle_get_storage_map();
+    $storage = ahx_wp_polylex_get_storage_map();
     $updated = array();
 
     foreach ($storage as $key => $value) {
@@ -293,89 +293,162 @@ function ahx_wp_wordle_reset_stats() {
         $updated[$key] = $value;
     }
 
-    ahx_wp_wordle_save_storage_map($updated);
+    ahx_wp_polylex_save_storage_map($updated);
     wp_send_json_success(array('reset' => true));
 }
 
-add_action('wp_ajax_ahx_wp_wordle_get_stats', 'ahx_wp_wordle_get_stats');
-add_action('wp_ajax_nopriv_ahx_wp_wordle_get_stats', 'ahx_wp_wordle_get_stats');
-function ahx_wp_wordle_get_stats() {
+add_action('wp_ajax_ahx_wp_polylex_get_stats', 'ahx_wp_polylex_get_stats');
+add_action('wp_ajax_nopriv_ahx_wp_polylex_get_stats', 'ahx_wp_polylex_get_stats');
+function ahx_wp_polylex_get_stats() {
     $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
-    if (!wp_verify_nonce($nonce, 'ahx_wp_wordle_state')) {
+    if (!wp_verify_nonce($nonce, 'ahx_wp_polylex_state')) {
         wp_send_json_error(array('message' => 'Ungültiger Nonce'), 403);
     }
 
-    $language_code = ahx_wp_wordle_normalize_language_code(wp_unslash($_POST['language'] ?? 'de_DE'));
+    $language_code = ahx_wp_polylex_normalize_language_code(wp_unslash($_POST['language'] ?? 'de_DE'));
     $rows = (int) wp_unslash($_POST['rows'] ?? 6);
     $rows = max(4, min(10, $rows));
 
-    $statistics = ahx_wp_wordle_get_user_language_statistics($language_code, $rows);
+    $statistics = ahx_wp_polylex_get_user_language_statistics($language_code, $rows);
     wp_send_json_success(array('statistics' => $statistics));
 }
 
-function ahx_wp_wordle_add_admin_menu() {
+function ahx_wp_polylex_add_admin_menu() {
     add_menu_page(
-        'AHX WP Wordle',
-        'AHX WP Wordle',
+        'AHX WP PolyLex',
+        'AHX WP PolyLex',
         'manage_options',
-        'ahx-wp-wordle',
-        'ahx_wp_wordle_landing_page',
+        'ahx-wp-polylex',
+        'ahx_wp_polylex_landing_page',
         'dashicons-games',
         4
     );
 
     add_submenu_page(
-        'ahx-wp-wordle',
-        'AHX WP Wordle',
+        'ahx-wp-polylex',
+        'AHX WP PolyLex',
         'Dashboard',
         'manage_options',
-        'ahx-wp-wordle',
-        'ahx_wp_wordle_landing_page'
+        'ahx-wp-polylex',
+        'ahx_wp_polylex_landing_page'
     );
 
     add_submenu_page(
-        'ahx-wp-wordle',
-        'AHX WP Wordle Einstellungen',
+        'ahx-wp-polylex',
+        'AHX WP PolyLex Einstellungen',
         'Einstellungen',
         'manage_options',
-        'ahx-wp-wordle-config',
-        'ahx_wp_wordle_settings_redirect_page'
+        'ahx-wp-polylex-config',
+        'ahx_wp_polylex_settings_redirect_page'
     );
 
     add_options_page(
-        'AHX WP Wordle Einstellungen',
-        'AHX WP Wordle',
+        'AHX WP PolyLex Einstellungen',
+        'AHX WP PolyLex',
         'manage_options',
-        'ahx-wp-wordle-config',
-        'ahx_wp_wordle_settings_page'
+        'ahx-wp-polylex-config',
+        'ahx_wp_polylex_settings_page'
     );
 }
-add_action('admin_menu', 'ahx_wp_wordle_add_admin_menu');
+add_action('admin_menu', 'ahx_wp_polylex_add_admin_menu');
 
-function ahx_wp_wordle_settings_redirect_page() {
+function ahx_wp_polylex_settings_redirect_page() {
     if (!current_user_can('manage_options')) {
         wp_die('Keine Berechtigung.');
     }
 
-    wp_safe_redirect(admin_url('options-general.php?page=ahx-wp-wordle-config'));
+    wp_safe_redirect(admin_url('options-general.php?page=ahx-wp-polylex-config'));
     exit;
 }
 
-function ahx_wp_wordle_landing_page() {
+function ahx_wp_polylex_handle_migration_notice_dismiss() {
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+
+    $dismiss = isset($_GET['ahx_wp_polylex_dismiss_migration_notice'])
+        ? sanitize_text_field(wp_unslash($_GET['ahx_wp_polylex_dismiss_migration_notice']))
+        : '';
+
+    if ($dismiss !== '1') {
+        return;
+    }
+
+    check_admin_referer('ahx_wp_polylex_dismiss_migration_notice');
+
+    update_option('ahx_wp_polylex_migration_notice_pending', '0', false);
+    delete_option('ahx_wp_polylex_migration_notice_details');
+
+    $redirect_to = remove_query_arg(
+        array('ahx_wp_polylex_dismiss_migration_notice', '_wpnonce'),
+        wp_get_referer() ? wp_get_referer() : admin_url('admin.php?page=ahx-wp-polylex')
+    );
+
+    wp_safe_redirect($redirect_to);
+    exit;
+}
+add_action('admin_init', 'ahx_wp_polylex_handle_migration_notice_dismiss');
+
+function ahx_wp_polylex_render_migration_notice() {
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+
+    if (get_option('ahx_wp_polylex_migration_notice_pending', '0') !== '1') {
+        return;
+    }
+
+    $details = get_option('ahx_wp_polylex_migration_notice_details', array());
+    $detail_parts = array();
+
+    if (is_array($details)) {
+        $table_details = isset($details['tables']) && is_array($details['tables']) ? array_unique(array_map('strval', $details['tables'])) : array();
+        $option_details = isset($details['options']) && is_array($details['options']) ? array_unique(array_map('strval', $details['options'])) : array();
+        $meta_rows = isset($details['user_meta_rows']) ? (int) $details['user_meta_rows'] : 0;
+
+        if (!empty($table_details)) {
+            $detail_parts[] = 'Tabellen: ' . implode(', ', $table_details);
+        }
+        if (!empty($option_details)) {
+            $detail_parts[] = 'Optionen: ' . count($option_details);
+        }
+        if ($meta_rows > 0) {
+            $detail_parts[] = 'User-Meta: ' . $meta_rows;
+        }
+    }
+
+    $dismiss_url = wp_nonce_url(
+        add_query_arg('ahx_wp_polylex_dismiss_migration_notice', '1', admin_url()),
+        'ahx_wp_polylex_dismiss_migration_notice'
+    );
+
+    echo '<div class="notice notice-success is-dismissible">';
+    echo '<p>';
+    echo esc_html__('AHX WP PolyLex hat vorhandene Wordle-Bestandsdaten erkannt und in die neue Struktur übernommen.', 'ahx_wp_polylex') . ' ';
+    echo '<a href="' . esc_url($dismiss_url) . '">' . esc_html__('Hinweis ausblenden', 'ahx_wp_polylex') . '</a>';
+    echo '</p>';
+    if (!empty($detail_parts)) {
+        echo '<p><small>' . esc_html(implode(' | ', $detail_parts)) . '</small></p>';
+    }
+    echo '</div>';
+}
+add_action('admin_notices', 'ahx_wp_polylex_render_migration_notice');
+
+function ahx_wp_polylex_landing_page() {
     if (!current_user_can('manage_options')) {
         wp_die('Keine Berechtigung.');
     }
 
     global $wpdb;
 
-    $settings_url = admin_url('options-general.php?page=ahx-wp-wordle-config');
+    $settings_url = admin_url('options-general.php?page=ahx-wp-polylex-config');
     $help_url = admin_url('post-new.php?post_type=page');
-    $shortcode_game = '[ahx_wordle_game]';
-    $shortcode_stats = '[ahx_wordle_stats]';
-    $shortcode_help = '[ahx_wordle_help]';
+    $shortcode_game = '[ahx_polylex_game]';
+    $shortcode_stats = '[ahx_polylex_stats]';
+    $shortcode_help = '[ahx_polylex_help]';
 
-    $language_rows = function_exists('ahx_wp_wordle_get_languages_with_counts')
-        ? ahx_wp_wordle_get_languages_with_counts()
+    $language_rows = function_exists('ahx_wp_polylex_get_languages_with_counts')
+        ? ahx_wp_polylex_get_languages_with_counts()
         : array();
 
     $language_count = 0;
@@ -384,7 +457,7 @@ function ahx_wp_wordle_landing_page() {
 
     if (is_array($language_rows)) {
         foreach ($language_rows as $row) {
-            $language_code = isset($row['language_code']) ? ahx_wp_wordle_normalize_language_code((string) $row['language_code']) : '';
+            $language_code = isset($row['language_code']) ? ahx_wp_polylex_normalize_language_code((string) $row['language_code']) : '';
             $total = isset($row['total']) ? (int) $row['total'] : 0;
             if ($language_code === '') {
                 continue;
@@ -405,57 +478,57 @@ function ahx_wp_wordle_landing_page() {
 
     $unknown_total = 0;
     $unknown_last_24h = 0;
-    if (function_exists('ahx_wp_wordle_unknown_words_table')) {
-        $unknown_table = ahx_wp_wordle_unknown_words_table();
+    if (function_exists('ahx_wp_polylex_unknown_words_table')) {
+        $unknown_table = ahx_wp_polylex_unknown_words_table();
         $unknown_total = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$unknown_table}");
         $unknown_last_24h = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$unknown_table} WHERE first_seen_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 24 HOUR)");
     }
 
     $last_play_date = '—';
-    if (function_exists('ahx_wp_wordle_history_table')) {
-        $history_table = ahx_wp_wordle_history_table();
+    if (function_exists('ahx_wp_polylex_history_table')) {
+        $history_table = ahx_wp_polylex_history_table();
         $max_date = (string) $wpdb->get_var("SELECT MAX(play_date) FROM {$history_table}");
         if ($max_date !== '') {
             $last_play_date = $max_date;
         }
     }
 
-    $default_language = ahx_wp_wordle_normalize_language_code((string) get_option('ahx_wp_wordle_default_language', 'de_DE'));
-    $today_word = ahx_wp_wordle_get_or_create_daily_word($default_language, gmdate('Y-m-d'));
+    $default_language = ahx_wp_polylex_normalize_language_code((string) get_option('ahx_wp_polylex_default_language', 'de_DE'));
+    $today_word = ahx_wp_polylex_get_or_create_daily_word($default_language, gmdate('Y-m-d'));
     $today_word_display = '—';
     if (is_array($today_word) && !empty($today_word['word'])) {
-        $today_word_display = ahx_wp_wordle_to_display_word((string) $today_word['word'], $default_language);
+        $today_word_display = ahx_wp_polylex_to_display_word((string) $today_word['word'], $default_language);
     }
 
     ?>
     <style>
-    .ahx-wordle-landing { max-width: 1120px; }
-    .ahx-wordle-landing h1 { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-    .ahx-wordle-landing .ahx-wordle-subtitle { color: #646970; margin: 0 0 22px; }
-    .ahx-wordle-status-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
-    .ahx-wordle-status-card {
+    .ahx-polylex-landing { max-width: 1120px; }
+    .ahx-polylex-landing h1 { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .ahx-polylex-landing .ahx-polylex-subtitle { color: #646970; margin: 0 0 22px; }
+    .ahx-polylex-status-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
+    .ahx-polylex-status-card {
         flex: 1 1 220px;
         background: #fff;
         border: 1px solid #c3c4c7;
         border-radius: 8px;
         padding: 16px 18px;
     }
-    .ahx-wordle-status-card .ahx-wordle-title { font-size: 12px; color: #646970; margin-bottom: 6px; }
-    .ahx-wordle-status-card .ahx-wordle-value { font-size: 22px; font-weight: 700; }
-    .ahx-wordle-feature-grid {
+    .ahx-polylex-status-card .ahx-polylex-title { font-size: 12px; color: #646970; margin-bottom: 6px; }
+    .ahx-polylex-status-card .ahx-polylex-value { font-size: 22px; font-weight: 700; }
+    .ahx-polylex-feature-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 16px;
     }
-    .ahx-wordle-feature {
+    .ahx-polylex-feature {
         background: #fff;
         border: 1px solid #c3c4c7;
         border-radius: 8px;
         padding: 18px 20px;
     }
-    .ahx-wordle-feature h3 { margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
-    .ahx-wordle-feature p { margin: 0 0 12px; color: #3c434a; }
-    .ahx-wordle-chip {
+    .ahx-polylex-feature h3 { margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+    .ahx-polylex-feature p { margin: 0 0 12px; color: #3c434a; }
+    .ahx-polylex-chip {
         display: inline-block;
         margin-right: 8px;
         margin-bottom: 8px;
@@ -467,55 +540,55 @@ function ahx_wp_wordle_landing_page() {
     }
     </style>
 
-    <div class="wrap ahx-wordle-landing">
+    <div class="wrap ahx-polylex-landing">
         <h1>
             <span class="dashicons dashicons-games" style="color:#2271b1;"></span>
-            AHX WP Wordle
+            AHX WP PolyLex
         </h1>
-        <p class="ahx-wordle-subtitle">Zentrale Übersicht für Wordle. Einstellungen findest du jetzt unter Einstellungen -> AHX WP Wordle.</p>
+        <p class="ahx-polylex-subtitle">Zentrale Übersicht für PolyLex. Einstellungen findest du jetzt unter Einstellungen -> AHX WP PolyLex.</p>
 
-        <div class="ahx-wordle-status-row">
-            <div class="ahx-wordle-status-card">
-                <div class="ahx-wordle-title"><?php echo esc_html__('Wörter gesamt', 'ahx_wp_wordle'); ?></div>
-                <div class="ahx-wordle-value"><?php echo esc_html((string) $words_total); ?></div>
+        <div class="ahx-polylex-status-row">
+            <div class="ahx-polylex-status-card">
+                <div class="ahx-polylex-title"><?php echo esc_html__('Wörter gesamt', 'ahx_wp_polylex'); ?></div>
+                <div class="ahx-polylex-value"><?php echo esc_html((string) $words_total); ?></div>
             </div>
-            <div class="ahx-wordle-status-card">
-                <div class="ahx-wordle-title"><?php echo esc_html__('Sprachen mit Wörtern', 'ahx_wp_wordle'); ?></div>
-                <div class="ahx-wordle-value"><?php echo esc_html((string) $language_count); ?></div>
+            <div class="ahx-polylex-status-card">
+                <div class="ahx-polylex-title"><?php echo esc_html__('Sprachen mit Wörtern', 'ahx_wp_polylex'); ?></div>
+                <div class="ahx-polylex-value"><?php echo esc_html((string) $language_count); ?></div>
             </div>
-            <div class="ahx-wordle-status-card">
-                <div class="ahx-wordle-title"><?php echo esc_html__('Getrackte unbekannte Wörter', 'ahx_wp_wordle'); ?></div>
-                <div class="ahx-wordle-value"><?php echo esc_html((string) $unknown_total); ?></div>
+            <div class="ahx-polylex-status-card">
+                <div class="ahx-polylex-title"><?php echo esc_html__('Getrackte unbekannte Wörter', 'ahx_wp_polylex'); ?></div>
+                <div class="ahx-polylex-value"><?php echo esc_html((string) $unknown_total); ?></div>
             </div>
-            <div class="ahx-wordle-status-card">
-                <div class="ahx-wordle-title">Neue unbekannte Wörter (24 h)</div>
-                <div class="ahx-wordle-value"><?php echo esc_html((string) $unknown_last_24h); ?></div>
+            <div class="ahx-polylex-status-card">
+                <div class="ahx-polylex-title">Neue unbekannte Wörter (24 h)</div>
+                <div class="ahx-polylex-value"><?php echo esc_html((string) $unknown_last_24h); ?></div>
             </div>
-            <div class="ahx-wordle-status-card">
-                <div class="ahx-wordle-title"><?php echo esc_html__('Letzter Spieltag', 'ahx_wp_wordle'); ?></div>
-                <div class="ahx-wordle-value" style="font-size:18px;"><?php echo esc_html($last_play_date); ?></div>
+            <div class="ahx-polylex-status-card">
+                <div class="ahx-polylex-title"><?php echo esc_html__('Letzter Spieltag', 'ahx_wp_polylex'); ?></div>
+                <div class="ahx-polylex-value" style="font-size:18px;"><?php echo esc_html($last_play_date); ?></div>
             </div>
-            <div class="ahx-wordle-status-card">
-                <div class="ahx-wordle-title">Heutiges Wort (<?php echo esc_html($default_language); ?>)</div>
-                <div class="ahx-wordle-value" style="font-size:18px;"><?php echo esc_html($today_word_display); ?></div>
+            <div class="ahx-polylex-status-card">
+                <div class="ahx-polylex-title">Heutiges Wort (<?php echo esc_html($default_language); ?>)</div>
+                <div class="ahx-polylex-value" style="font-size:18px;"><?php echo esc_html($today_word_display); ?></div>
             </div>
         </div>
 
-        <div class="ahx-wordle-feature-grid">
-            <div class="ahx-wordle-feature">
-                <h3><span class="dashicons dashicons-admin-generic"></span><?php echo esc_html__('Einstellungen', 'ahx_wp_wordle'); ?></h3>
-                <p><?php echo esc_html__('Konfiguriere Sprache, Versuche, Persistenz, Importe und getrackte Wörter in der WordPress-Einstellungsseite.', 'ahx_wp_wordle'); ?></p>
-                <a class="button button-primary" href="<?php echo esc_url($settings_url); ?>"><?php echo esc_html__('Einstellungen öffnen', 'ahx_wp_wordle'); ?></a>
+        <div class="ahx-polylex-feature-grid">
+            <div class="ahx-polylex-feature">
+                <h3><span class="dashicons dashicons-admin-generic"></span><?php echo esc_html__('Einstellungen', 'ahx_wp_polylex'); ?></h3>
+                <p><?php echo esc_html__('Konfiguriere Sprache, Versuche, Persistenz, Importe und getrackte Wörter in der WordPress-Einstellungsseite.', 'ahx_wp_polylex'); ?></p>
+                <a class="button button-primary" href="<?php echo esc_url($settings_url); ?>"><?php echo esc_html__('Einstellungen öffnen', 'ahx_wp_polylex'); ?></a>
             </div>
 
-            <div class="ahx-wordle-feature">
-                <h3><span class="dashicons dashicons-chart-bar"></span><?php echo esc_html__('Wörter je Sprache', 'ahx_wp_wordle'); ?></h3>
-                <p><?php echo esc_html__('Aktuelle Verteilung der verfügbaren Wortlisten nach Sprache.', 'ahx_wp_wordle'); ?></p>
+            <div class="ahx-polylex-feature">
+                <h3><span class="dashicons dashicons-chart-bar"></span><?php echo esc_html__('Wörter je Sprache', 'ahx_wp_polylex'); ?></h3>
+                <p><?php echo esc_html__('Aktuelle Verteilung der verfügbaren Wortlisten nach Sprache.', 'ahx_wp_polylex'); ?></p>
                 <?php if (empty($words_by_language)) : ?>
-                    <p><em><?php echo esc_html__('Keine Sprachdaten vorhanden.', 'ahx_wp_wordle'); ?></em></p>
+                    <p><em><?php echo esc_html__('Keine Sprachdaten vorhanden.', 'ahx_wp_polylex'); ?></em></p>
                 <?php else : ?>
                     <?php foreach ($words_by_language as $language_item) : ?>
-                        <span class="ahx-wordle-chip">
+                        <span class="ahx-polylex-chip">
                             <?php echo esc_html((string) $language_item['code']); ?>:
                             <?php echo esc_html((string) $language_item['total']); ?>
                         </span>
@@ -523,60 +596,60 @@ function ahx_wp_wordle_landing_page() {
                 <?php endif; ?>
             </div>
 
-            <div class="ahx-wordle-feature">
-                <h3><span class="dashicons dashicons-editor-code"></span><?php echo esc_html__('Shortcodes', 'ahx_wp_wordle'); ?></h3>
-                <p><?php echo esc_html__('Nutze die folgenden Shortcodes in Seiten oder Beiträgen:', 'ahx_wp_wordle'); ?></p>
-                <span class="ahx-wordle-chip"><?php echo esc_html($shortcode_game); ?></span>
-                <span class="ahx-wordle-chip"><?php echo esc_html($shortcode_stats); ?></span>
-                <span class="ahx-wordle-chip"><?php echo esc_html($shortcode_help); ?></span>
+            <div class="ahx-polylex-feature">
+                <h3><span class="dashicons dashicons-editor-code"></span><?php echo esc_html__('Shortcodes', 'ahx_wp_polylex'); ?></h3>
+                <p><?php echo esc_html__('Nutze die folgenden Shortcodes in Seiten oder Beiträgen:', 'ahx_wp_polylex'); ?></p>
+                <span class="ahx-polylex-chip"><?php echo esc_html($shortcode_game); ?></span>
+                <span class="ahx-polylex-chip"><?php echo esc_html($shortcode_stats); ?></span>
+                <span class="ahx-polylex-chip"><?php echo esc_html($shortcode_help); ?></span>
             </div>
 
-            <div class="ahx-wordle-feature">
-                <h3><span class="dashicons dashicons-welcome-write-blog"></span><?php echo esc_html__('Schnellstart', 'ahx_wp_wordle'); ?></h3>
-                <p><?php echo esc_html__('Erstelle eine neue Seite und füge dort den Spiel-Shortcode ein, um Wordle sofort live zu schalten.', 'ahx_wp_wordle'); ?></p>
-                <a class="button" href="<?php echo esc_url($help_url); ?>"><?php echo esc_html__('Neue Seite erstellen', 'ahx_wp_wordle'); ?></a>
+            <div class="ahx-polylex-feature">
+                <h3><span class="dashicons dashicons-welcome-write-blog"></span><?php echo esc_html__('Schnellstart', 'ahx_wp_polylex'); ?></h3>
+                <p><?php echo esc_html__('Erstelle eine neue Seite und füge dort den Spiel-Shortcode ein, um PolyLex sofort live zu schalten.', 'ahx_wp_polylex'); ?></p>
+                <a class="button" href="<?php echo esc_url($help_url); ?>"><?php echo esc_html__('Neue Seite erstellen', 'ahx_wp_polylex'); ?></a>
             </div>
         </div>
     </div>
     <?php
 }
 
-function ahx_wp_wordle_add_admin_bar_menu($wp_admin_bar) {
+function ahx_wp_polylex_add_admin_bar_menu($wp_admin_bar) {
     if (!is_admin_bar_showing() || !current_user_can('manage_options')) {
         return;
     }
 
     $wp_admin_bar->add_node(array(
-        'id' => 'ahx_wp_wordle_adminbar',
-        'title' => 'AHX Wordle',
-        'href' => admin_url('admin.php?page=ahx-wp-wordle'),
+        'id' => 'ahx_wp_polylex_adminbar',
+        'title' => 'AHX PolyLex',
+        'href' => admin_url('admin.php?page=ahx-wp-polylex'),
         'meta' => array(
-            'title' => 'AHX Wordle',
+            'title' => 'AHX PolyLex',
         ),
     ));
 }
-add_action('admin_bar_menu', 'ahx_wp_wordle_add_admin_bar_menu', 100);
+add_action('admin_bar_menu', 'ahx_wp_polylex_add_admin_bar_menu', 100);
 
-function ahx_wp_wordle_enqueue_assets() {
+function ahx_wp_polylex_enqueue_assets() {
     wp_register_style(
-        'ahx-wp-wordle-style',
-        plugin_dir_url(__FILE__) . 'assets/css/wordle.css',
+        'ahx-wp-polylex-style',
+        plugin_dir_url(__FILE__) . 'assets/css/polylex.css',
         array(),
         '0.1.1'
     );
 
     wp_register_script(
-        'ahx-wp-wordle-script',
-        plugin_dir_url(__FILE__) . 'assets/js/wordle.js',
+        'ahx-wp-polylex-script',
+        plugin_dir_url(__FILE__) . 'assets/js/polylex.js',
         array(),
         '0.1.2',
         true
     );
 }
-add_action('wp_enqueue_scripts', 'ahx_wp_wordle_enqueue_assets');
+add_action('wp_enqueue_scripts', 'ahx_wp_polylex_enqueue_assets');
 
-function ahx_wp_wordle_get_i18n_messages($language_code) {
-    $language_code = ahx_wp_wordle_normalize_language_code($language_code);
+function ahx_wp_polylex_get_i18n_messages($language_code) {
+    $language_code = ahx_wp_polylex_normalize_language_code($language_code);
     $base_language = strtolower(substr($language_code, 0, 2));
 
     $messages = array(
@@ -675,7 +748,7 @@ function ahx_wp_wordle_get_i18n_messages($language_code) {
     return $messages['de'];
 }
 
-function ahx_wp_wordle_get_next_berlin_midnight_timestamp() {
+function ahx_wp_polylex_get_next_berlin_midnight_timestamp() {
     $tz = new DateTimeZone('Europe/Berlin');
     $now = new DateTime('now', $tz);
     $next_midnight = clone $now;
@@ -684,8 +757,8 @@ function ahx_wp_wordle_get_next_berlin_midnight_timestamp() {
     return $next_midnight->getTimestamp();
 }
 
-function ahx_wp_wordle_to_display_word($word, $language_code) {
-    $language_code = ahx_wp_wordle_normalize_language_code($language_code);
+function ahx_wp_polylex_to_display_word($word, $language_code) {
+    $language_code = ahx_wp_polylex_normalize_language_code($language_code);
     $base_language = strtolower(substr($language_code, 0, 2));
     $value = (string) $word;
 
@@ -700,15 +773,15 @@ function ahx_wp_wordle_to_display_word($word, $language_code) {
     return (string) strtoupper($value);
 }
 
-function ahx_wp_wordle_get_user_language_statistics($language_code, $rows) {
+function ahx_wp_polylex_get_user_language_statistics($language_code, $rows) {
     global $wpdb;
 
-    $language_code = ahx_wp_wordle_normalize_language_code($language_code);
+    $language_code = ahx_wp_polylex_normalize_language_code($language_code);
     $rows = max(4, min(10, (int) $rows));
 
-    $storage = ahx_wp_wordle_get_storage_map();
-    $words_table = ahx_wp_wordle_words_table();
-    $history_table = ahx_wp_wordle_history_table();
+    $storage = ahx_wp_polylex_get_storage_map();
+    $words_table = ahx_wp_polylex_words_table();
+    $history_table = ahx_wp_polylex_history_table();
 
     $history = $wpdb->get_results(
         $wpdb->prepare(
@@ -738,7 +811,7 @@ function ahx_wp_wordle_get_user_language_statistics($language_code, $rows) {
     if (is_array($history)) {
         foreach ($history as $row) {
             $play_date = (string) ($row['play_date'] ?? '');
-            $target = ahx_wp_wordle_normalize_single_word((string) ($row['word'] ?? ''), $language_code);
+            $target = ahx_wp_polylex_normalize_single_word((string) ($row['word'] ?? ''), $language_code);
             if ($play_date === '' || $target === '') {
                 continue;
             }
@@ -753,7 +826,7 @@ function ahx_wp_wordle_get_user_language_statistics($language_code, $rows) {
                 if (!is_string($guess)) {
                     continue;
                 }
-                $normalized = ahx_wp_wordle_normalize_single_word($guess, $language_code);
+                $normalized = ahx_wp_polylex_normalize_single_word($guess, $language_code);
                 if ($normalized !== '') {
                     $guesses[] = $normalized;
                 }
@@ -827,37 +900,37 @@ function ahx_wp_wordle_get_user_language_statistics($language_code, $rows) {
     );
 }
 
-function ahx_wp_wordle_render_shortcode($atts) {
+function ahx_wp_polylex_render_shortcode($atts) {
     $atts = shortcode_atts(
         array(
             'lang' => '',
         ),
         $atts,
-        'ahx_wordle'
+        'ahx_polylex'
     );
 
-    wp_enqueue_style('ahx-wp-wordle-style');
-    wp_enqueue_script('ahx-wp-wordle-script');
+    wp_enqueue_style('ahx-wp-polylex-style');
+    wp_enqueue_script('ahx-wp-polylex-script');
 
-    $configured_language = (string) get_option('ahx_wp_wordle_default_language', 'de_DE');
-    $query_language = isset($_GET['ahx_wordle_lang']) ? (string) wp_unslash($_GET['ahx_wordle_lang']) : '';
+    $configured_language = (string) get_option('ahx_wp_polylex_default_language', 'de_DE');
+    $query_language = isset($_GET['ahx_polylex_lang']) ? (string) wp_unslash($_GET['ahx_polylex_lang']) : '';
     $shortcode_language = trim((string) $atts['lang']) !== '' ? (string) $atts['lang'] : '';
 
     $requested_language = $query_language !== '' ? $query_language : ($shortcode_language !== '' ? $shortcode_language : $configured_language);
-    $requested_language = ahx_wp_wordle_normalize_language_code($requested_language);
+    $requested_language = ahx_wp_polylex_normalize_language_code($requested_language);
 
-    $rows = (int) get_option('ahx_wp_wordle_rows', 6);
+    $rows = (int) get_option('ahx_wp_polylex_rows', 6);
     if ($rows < 4 || $rows > 10) {
         $rows = 6;
     }
 
-    $possible_languages = ahx_wp_wordle_get_possible_languages();
+    $possible_languages = ahx_wp_polylex_get_possible_languages();
     $available_languages = array();
     $words_by_language = array();
 
     foreach ($possible_languages as $possible_language) {
-        $possible_language = ahx_wp_wordle_normalize_language_code($possible_language);
-        $lang_words = ahx_wp_wordle_get_words_by_language($possible_language);
+        $possible_language = ahx_wp_polylex_normalize_language_code($possible_language);
+        $lang_words = ahx_wp_polylex_get_words_by_language($possible_language);
         if (!empty($lang_words)) {
             $available_languages[] = $possible_language;
             $words_by_language[$possible_language] = $lang_words;
@@ -865,7 +938,7 @@ function ahx_wp_wordle_render_shortcode($atts) {
     }
 
     if (empty($available_languages)) {
-        $fallback_words = ahx_wp_wordle_get_words_by_language('de_DE');
+        $fallback_words = ahx_wp_polylex_get_words_by_language('de_DE');
         if (!empty($fallback_words)) {
             $available_languages[] = 'de_DE';
             $words_by_language['de_DE'] = $fallback_words;
@@ -873,7 +946,7 @@ function ahx_wp_wordle_render_shortcode($atts) {
     }
 
     if (empty($available_languages)) {
-        return '<div class="ahx-wordle">Für diese Sprache sind keine Wörter verfügbar.</div>';
+        return '<div class="ahx-polylex">Für diese Sprache sind keine Wörter verfügbar.</div>';
     }
 
     $language_code = in_array($requested_language, $available_languages, true) ? $requested_language : $available_languages[0];
@@ -889,15 +962,15 @@ function ahx_wp_wordle_render_shortcode($atts) {
     $day_key = gmdate('Y-m-d');
     $puzzle_key = $day_key . '|' . $language_code;
 
-    $daily_word = ahx_wp_wordle_get_or_create_daily_word($language_code, $day_key);
+    $daily_word = ahx_wp_polylex_get_or_create_daily_word($language_code, $day_key);
     if (!is_array($daily_word) || empty($daily_word['word'])) {
-        return '<div class="ahx-wordle">Kein Tageswort verfügbar.</div>';
+        return '<div class="ahx-polylex">Kein Tageswort verfügbar.</div>';
     }
 
-    $saved_guesses = array_slice(ahx_wp_wordle_get_saved_guesses_for_day($puzzle_key), 0, $rows);
-    $persistence_mode = ahx_wp_wordle_sanitize_persistence_mode((string) get_option('ahx_wp_wordle_persistence_mode', 'auto'));
-    $statistics = ahx_wp_wordle_get_user_language_statistics($language_code, $rows);
-    $next_midnight_ts = ahx_wp_wordle_get_next_berlin_midnight_timestamp();
+    $saved_guesses = array_slice(ahx_wp_polylex_get_saved_guesses_for_day($puzzle_key), 0, $rows);
+    $persistence_mode = ahx_wp_polylex_sanitize_persistence_mode((string) get_option('ahx_wp_polylex_persistence_mode', 'auto'));
+    $statistics = ahx_wp_polylex_get_user_language_statistics($language_code, $rows);
+    $next_midnight_ts = ahx_wp_polylex_get_next_berlin_midnight_timestamp();
 
     $payload = array(
         'rows' => $rows,
@@ -905,9 +978,9 @@ function ahx_wp_wordle_render_shortcode($atts) {
         'dayKey' => $day_key,
         'puzzleKey' => $puzzle_key,
         'language' => $language_code,
-        'languageParam' => 'ahx_wordle_lang',
+        'languageParam' => 'ahx_polylex_lang',
         'languageOptions' => $language_options,
-        'targetWord' => ahx_wp_wordle_to_display_word((string) $daily_word['word'], $language_code),
+        'targetWord' => ahx_wp_polylex_to_display_word((string) $daily_word['word'], $language_code),
         'savedGuesses' => $saved_guesses,
         'statistics' => $statistics,
         'nextPuzzleTimestamp' => $next_midnight_ts,
@@ -916,28 +989,28 @@ function ahx_wp_wordle_render_shortcode($atts) {
         'isLoggedIn' => is_user_logged_in(),
         'isAdmin' => current_user_can('manage_options'),
         'persistenceMode' => $persistence_mode,
-        'localStorageKey' => 'ahx_wp_wordle_state|' . $puzzle_key,
-        'localStoragePrefix' => 'ahx_wp_wordle_state|',
+        'localStorageKey' => 'ahx_wp_polylex_state|' . $puzzle_key,
+        'localStoragePrefix' => 'ahx_wp_polylex_state|',
         'ajaxUrl' => admin_url('admin-ajax.php'),
-        'nonce' => wp_create_nonce('ahx_wp_wordle_state'),
-        'i18n' => ahx_wp_wordle_get_i18n_messages($language_code),
+        'nonce' => wp_create_nonce('ahx_wp_polylex_state'),
+        'i18n' => ahx_wp_polylex_get_i18n_messages($language_code),
     );
 
-    wp_add_inline_script('ahx-wp-wordle-script', 'window.AHXWordleConfig = ' . wp_json_encode($payload) . ';', 'before');
+    wp_add_inline_script('ahx-wp-polylex-script', 'window.AHXPolyLexConfig = ' . wp_json_encode($payload) . ';', 'before');
 
     ob_start();
     ?>
-    <?php $selector_id = 'ahx-wordle-language-' . wp_rand(1000, 99999); ?>
-    <div class="ahx-wordle" data-cols="5" data-rows="<?php echo esc_attr((string) $rows); ?>">
-        <div class="ahx-wordle__status" aria-live="polite"></div>
-        <div class="ahx-wordle__board" role="grid" aria-label="Wordle Spielfeld"></div>
-        <div class="ahx-wordle__keyboard" role="group" aria-label="Wordle Tastatur"></div>
-        <div class="ahx-wordle__stats"></div>
-        <div class="ahx-wordle__countdown"></div>
-        <div class="ahx-wordle__footer">
-            <div class="ahx-wordle__language">
+    <?php $selector_id = 'ahx-polylex-language-' . wp_rand(1000, 99999); ?>
+    <div class="ahx-polylex" data-cols="5" data-rows="<?php echo esc_attr((string) $rows); ?>">
+        <div class="ahx-polylex__status" aria-live="polite"></div>
+        <div class="ahx-polylex__board" role="grid" aria-label="PolyLex Spielfeld"></div>
+        <div class="ahx-polylex__keyboard" role="group" aria-label="PolyLex Tastatur"></div>
+        <div class="ahx-polylex__stats"></div>
+        <div class="ahx-polylex__countdown"></div>
+        <div class="ahx-polylex__footer">
+            <div class="ahx-polylex__language">
                 <label for="<?php echo esc_attr($selector_id); ?>"><?php echo esc_html((string) $payload['i18n']['language_label']); ?></label>
-                <select id="<?php echo esc_attr($selector_id); ?>" class="ahx-wordle__language-select" aria-label="Wordle Sprache wählen">
+                <select id="<?php echo esc_attr($selector_id); ?>" class="ahx-polylex__language-select" aria-label="PolyLex Sprache wählen">
                     <?php foreach ($language_options as $option) : ?>
                         <option value="<?php echo esc_attr((string) $option['code']); ?>" <?php selected($language_code, (string) $option['code']); ?>>
                             <?php echo esc_html((string) $option['label']); ?>
@@ -945,61 +1018,61 @@ function ahx_wp_wordle_render_shortcode($atts) {
                     <?php endforeach; ?>
                 </select>
             </div>
-            <button class="ahx-wordle__report-button" id="ahx-wordle-report-btn">
-                <?php echo esc_html(__('Wort melden', 'ahx_wp_wordle')); ?>
+            <button class="ahx-polylex__report-button" id="ahx-polylex-report-btn">
+                <?php echo esc_html(__('Wort melden', 'ahx_wp_polylex')); ?>
             </button>
-            <button class="ahx-wordle__stats-reset-footer" id="ahx-wordle-stats-reset-footer" style="display:none;">
-                <?php echo esc_html(__('Statistik zurücksetzen', 'ahx_wp_wordle')); ?>
+            <button class="ahx-polylex__stats-reset-footer" id="ahx-polylex-stats-reset-footer" style="display:none;">
+                <?php echo esc_html(__('Statistik zurücksetzen', 'ahx_wp_polylex')); ?>
             </button>
         </div>
 
-        <div class="ahx-wordle-modal-overlay" id="ahx-wordle-report-modal">
-            <div class="ahx-wordle-modal">
-                <button class="ahx-wordle-modal__close" id="ahx-wordle-report-close">&times;</button>
-                <h3 class="ahx-wordle-modal__title" id="ahx-wordle-modal-title"><?php echo esc_html(__('Lösungswort melden', 'ahx_wp_wordle')); ?></h3>
-                <form id="ahx-wordle-report-form">
-                    <div class="ahx-wordle-modal__reason-group">
-                        <label class="ahx-wordle-modal__reason-label">
+        <div class="ahx-polylex-modal-overlay" id="ahx-polylex-report-modal">
+            <div class="ahx-polylex-modal">
+                <button class="ahx-polylex-modal__close" id="ahx-polylex-report-close">&times;</button>
+                <h3 class="ahx-polylex-modal__title" id="ahx-polylex-modal-title"><?php echo esc_html(__('Lösungswort melden', 'ahx_wp_polylex')); ?></h3>
+                <form id="ahx-polylex-report-form">
+                    <div class="ahx-polylex-modal__reason-group">
+                        <label class="ahx-polylex-modal__reason-label">
                             <input type="radio" name="reason" value="not_base_form" checked>
-                            <span class="ahx-wordle-modal__reason-text"><?php echo esc_html(__('Nicht in Grundform', 'ahx_wp_wordle')); ?></span>
+                            <span class="ahx-polylex-modal__reason-text"><?php echo esc_html(__('Nicht in Grundform', 'ahx_wp_polylex')); ?></span>
                         </label>
                     </div>
-                    <div class="ahx-wordle-modal__reason-group">
-                        <label class="ahx-wordle-modal__reason-label">
+                    <div class="ahx-polylex-modal__reason-group">
+                        <label class="ahx-polylex-modal__reason-label">
                             <input type="radio" name="reason" value="not_singular">
-                            <span class="ahx-wordle-modal__reason-text"><?php echo esc_html(__('Nicht singular', 'ahx_wp_wordle')); ?></span>
+                            <span class="ahx-polylex-modal__reason-text"><?php echo esc_html(__('Nicht singular', 'ahx_wp_polylex')); ?></span>
                         </label>
                     </div>
-                    <div class="ahx-wordle-modal__reason-group">
-                        <label class="ahx-wordle-modal__reason-label">
+                    <div class="ahx-polylex-modal__reason-group">
+                        <label class="ahx-polylex-modal__reason-label">
                             <input type="radio" name="reason" value="invalid">
-                            <span class="ahx-wordle-modal__reason-text"><?php echo esc_html(__('Ungültiges Wort', 'ahx_wp_wordle')); ?></span>
+                            <span class="ahx-polylex-modal__reason-text"><?php echo esc_html(__('Ungültiges Wort', 'ahx_wp_polylex')); ?></span>
                         </label>
                     </div>
-                    <div class="ahx-wordle-modal__reason-group">
-                        <label class="ahx-wordle-modal__reason-label">
+                    <div class="ahx-polylex-modal__reason-group">
+                        <label class="ahx-polylex-modal__reason-label">
                             <input type="radio" name="reason" value="spelling">
-                            <span class="ahx-wordle-modal__reason-text"><?php echo esc_html(__('Schreibfehler', 'ahx_wp_wordle')); ?></span>
+                            <span class="ahx-polylex-modal__reason-text"><?php echo esc_html(__('Schreibfehler', 'ahx_wp_polylex')); ?></span>
                         </label>
                     </div>
-                    <div class="ahx-wordle-modal__reason-group">
-                        <label class="ahx-wordle-modal__reason-label">
+                    <div class="ahx-polylex-modal__reason-group">
+                        <label class="ahx-polylex-modal__reason-label">
                             <input type="radio" name="reason" value="offensive">
-                            <span class="ahx-wordle-modal__reason-text"><?php echo esc_html(__('Anstößig', 'ahx_wp_wordle')); ?></span>
+                            <span class="ahx-polylex-modal__reason-text"><?php echo esc_html(__('Anstößig', 'ahx_wp_polylex')); ?></span>
                         </label>
                     </div>
-                    <div class="ahx-wordle-modal__reason-group">
-                        <label class="ahx-wordle-modal__reason-label">
+                    <div class="ahx-polylex-modal__reason-group">
+                        <label class="ahx-polylex-modal__reason-label">
                             <input type="radio" name="reason" value="other">
-                            <span class="ahx-wordle-modal__reason-text"><?php echo esc_html(__('Sonstiger Grund', 'ahx_wp_wordle')); ?></span>
+                            <span class="ahx-polylex-modal__reason-text"><?php echo esc_html(__('Sonstiger Grund', 'ahx_wp_polylex')); ?></span>
                         </label>
                     </div>
-                    <div class="ahx-wordle-modal__actions">
-                        <button type="button" id="ahx-wordle-report-cancel" class="ahx-wordle-modal__button ahx-wordle-modal__button--secondary">
-                            <?php echo esc_html(__('Abbrechen', 'ahx_wp_wordle')); ?>
+                    <div class="ahx-polylex-modal__actions">
+                        <button type="button" id="ahx-polylex-report-cancel" class="ahx-polylex-modal__button ahx-polylex-modal__button--secondary">
+                            <?php echo esc_html(__('Abbrechen', 'ahx_wp_polylex')); ?>
                         </button>
-                        <button type="submit" class="ahx-wordle-modal__button ahx-wordle-modal__button--primary">
-                            <?php echo esc_html(__('Melden', 'ahx_wp_wordle')); ?>
+                        <button type="submit" class="ahx-polylex-modal__button ahx-polylex-modal__button--primary">
+                            <?php echo esc_html(__('Melden', 'ahx_wp_polylex')); ?>
                         </button>
                     </div>
                 </form>
@@ -1010,34 +1083,34 @@ function ahx_wp_wordle_render_shortcode($atts) {
 
     return ob_get_clean();
 }
-add_shortcode('ahx_wordle', 'ahx_wp_wordle_render_shortcode');
+add_shortcode('ahx_polylex', 'ahx_wp_polylex_render_shortcode');
 
-function ahx_wp_wordle_render_game_shortcode($atts) {
-    return '<div class="ahx-wordle-view ahx-wordle-view--game">' . ahx_wp_wordle_render_shortcode($atts) . '</div>';
+function ahx_wp_polylex_render_game_shortcode($atts) {
+    return '<div class="ahx-polylex-view ahx-polylex-view--game">' . ahx_wp_polylex_render_shortcode($atts) . '</div>';
 }
-add_shortcode('ahx_wordle_game', 'ahx_wp_wordle_render_game_shortcode');
+add_shortcode('ahx_polylex_game', 'ahx_wp_polylex_render_game_shortcode');
 
-function ahx_wp_wordle_render_stats_shortcode($atts) {
-    return '<div class="ahx-wordle-view ahx-wordle-view--stats">' . ahx_wp_wordle_render_shortcode($atts) . '</div>';
+function ahx_wp_polylex_render_stats_shortcode($atts) {
+    return '<div class="ahx-polylex-view ahx-polylex-view--stats">' . ahx_wp_polylex_render_shortcode($atts) . '</div>';
 }
-add_shortcode('ahx_wordle_stats', 'ahx_wp_wordle_render_stats_shortcode');
+add_shortcode('ahx_polylex_stats', 'ahx_wp_polylex_render_stats_shortcode');
 
-function ahx_wp_wordle_render_help_shortcode($atts) {
+function ahx_wp_polylex_render_help_shortcode($atts) {
     $atts = shortcode_atts(
         array(
             'lang' => '',
         ),
         $atts,
-        'ahx_wordle_help'
+        'ahx_polylex_help'
     );
 
-    wp_enqueue_style('ahx-wp-wordle-style');
+    wp_enqueue_style('ahx-wp-polylex-style');
 
-    $configured_language = (string) get_option('ahx_wp_wordle_default_language', 'de_DE');
-    $query_language = isset($_GET['ahx_wordle_lang']) ? (string) wp_unslash($_GET['ahx_wordle_lang']) : '';
+    $configured_language = (string) get_option('ahx_wp_polylex_default_language', 'de_DE');
+    $query_language = isset($_GET['ahx_polylex_lang']) ? (string) wp_unslash($_GET['ahx_polylex_lang']) : '';
     $shortcode_language = trim((string) $atts['lang']) !== '' ? (string) $atts['lang'] : '';
     $language_code = $query_language !== '' ? $query_language : ($shortcode_language !== '' ? $shortcode_language : $configured_language);
-    $language_code = ahx_wp_wordle_normalize_language_code($language_code);
+    $language_code = ahx_wp_polylex_normalize_language_code($language_code);
     $base_language = strtolower(substr($language_code, 0, 2));
 
     if ($base_language === 'en') {
@@ -1120,35 +1193,35 @@ function ahx_wp_wordle_render_help_shortcode($atts) {
 
     ob_start();
     ?>
-    <div class="ahx-wordle-help">
-        <h3 class="ahx-wordle-help__title"><?php echo esc_html($title); ?></h3>
-        <p class="ahx-wordle-help__intro"><?php echo esc_html($intro); ?></p>
+    <div class="ahx-polylex-help">
+        <h3 class="ahx-polylex-help__title"><?php echo esc_html($title); ?></h3>
+        <p class="ahx-polylex-help__intro"><?php echo esc_html($intro); ?></p>
 
         <?php foreach ($sections as $section) : ?>
-            <section class="ahx-wordle-help__section">
-                <h4 class="ahx-wordle-help__section-title"><?php echo esc_html((string) $section['title']); ?></h4>
+            <section class="ahx-polylex-help__section">
+                <h4 class="ahx-polylex-help__section-title"><?php echo esc_html((string) $section['title']); ?></h4>
                 <?php foreach ((array) $section['paragraphs'] as $paragraph) : ?>
-                    <p class="ahx-wordle-help__text"><?php echo esc_html((string) $paragraph); ?></p>
+                    <p class="ahx-polylex-help__text"><?php echo esc_html((string) $paragraph); ?></p>
                 <?php endforeach; ?>
             </section>
         <?php endforeach; ?>
 
-        <section class="ahx-wordle-help__section ahx-wordle-help__section--legend">
-            <h4 class="ahx-wordle-help__section-title"><?php echo esc_html($legend_title); ?></h4>
-            <ul class="ahx-wordle-help__legend-list">
+        <section class="ahx-polylex-help__section ahx-polylex-help__section--legend">
+            <h4 class="ahx-polylex-help__section-title"><?php echo esc_html($legend_title); ?></h4>
+            <ul class="ahx-polylex-help__legend-list">
                 <?php foreach ($legend_items as $item) : ?>
-                    <li class="ahx-wordle-help__legend-item">
-                        <span class="ahx-wordle-help__swatch ahx-wordle-help__swatch--<?php echo esc_attr((string) $item['state']); ?>" aria-hidden="true"></span>
-                        <span class="ahx-wordle-help__legend-label"><?php echo esc_html((string) $item['label']); ?>:</span>
-                        <span class="ahx-wordle-help__legend-text"><?php echo esc_html((string) $item['text']); ?></span>
+                    <li class="ahx-polylex-help__legend-item">
+                        <span class="ahx-polylex-help__swatch ahx-polylex-help__swatch--<?php echo esc_attr((string) $item['state']); ?>" aria-hidden="true"></span>
+                        <span class="ahx-polylex-help__legend-label"><?php echo esc_html((string) $item['label']); ?>:</span>
+                        <span class="ahx-polylex-help__legend-text"><?php echo esc_html((string) $item['text']); ?></span>
                     </li>
                 <?php endforeach; ?>
             </ul>
         </section>
 
-        <section class="ahx-wordle-help__section ahx-wordle-help__section--tips">
-            <h4 class="ahx-wordle-help__section-title"><?php echo esc_html($tips_title); ?></h4>
-            <ul class="ahx-wordle-help__tips-list">
+        <section class="ahx-polylex-help__section ahx-polylex-help__section--tips">
+            <h4 class="ahx-polylex-help__section-title"><?php echo esc_html($tips_title); ?></h4>
+            <ul class="ahx-polylex-help__tips-list">
                 <?php foreach ($tips as $tip) : ?>
                     <li><?php echo esc_html((string) $tip); ?></li>
                 <?php endforeach; ?>
@@ -1159,4 +1232,6 @@ function ahx_wp_wordle_render_help_shortcode($atts) {
 
     return ob_get_clean();
 }
-add_shortcode('ahx_wordle_help', 'ahx_wp_wordle_render_help_shortcode');
+add_shortcode('ahx_polylex_help', 'ahx_wp_polylex_render_help_shortcode');
+
+

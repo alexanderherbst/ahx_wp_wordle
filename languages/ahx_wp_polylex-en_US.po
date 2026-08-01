@@ -1,0 +1,281 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ahx_wp_polylex\n"
+"POT-Creation-Date: 2026-05-25 14:10+0000\n"
+"PO-Revision-Date: 2026-05-25 14:10+0000\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: AHX WP i18n\n"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "AHX WP PolyLex Einstellungen"
+msgstr "AHX WP PolyLex Settings"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Abbrechen"
+msgstr "Cancel"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Aktion"
+msgstr "Action"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Aktuelle Verteilung der verfügbaren Wortlisten nach Sprache."
+msgstr "Current distribution of available word lists by language."
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Alle auswählen"
+msgstr "Select all"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Anstößig"
+msgstr "Offensive"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Anzeigen"
+msgstr "Show"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Ausgewählte Wörter wirklich löschen?"
+msgstr "Really delete selected words?"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Ausgewählte Wörter wirklich verwerfen?"
+msgstr "Really discard selected words?"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Ausgewählte gemeldete Wörter wirklich löschen?"
+msgstr "Really delete selected reported words?"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Ausgewählte in Wortliste übernehmen"
+msgstr "Add selected to word list"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Ausgewählte löschen"
+msgstr "Delete selected"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Ausgewählte verwerfen"
+msgstr "Discard selected"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Auto: Benutzer angemeldet = Server, Gäste = localStorage mit Server-Fallback."
+msgstr "Auto: Logged-In user = Server, Guests = localStorage with Server-Fallback."
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "CSV-Datei"
+msgstr "CSV file"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "CSV-Import Wörter"
+msgstr "Import words from CSV"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Die Sprache wurde nicht gefunden."
+msgstr "The language could not be found."
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Die letzte verbleibende Sprache kann nicht gelöscht werden."
+msgstr "The last remaining language cannot be deleted."
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Diese Meldung wirklich löschen?"
+msgstr "Really delete this report?"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Diese Sprache wird standardmäßig genutzt, wenn im Shortcode kein <code>lang</code> gesetzt ist.</p>"
+msgstr "This language is used by default when no <code>lang</code> is set in the shortcode.</p>"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Einstellungen"
+msgstr "Settings"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Einstellungen öffnen"
+msgstr "Open settings"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Erstelle eine neue Seite und füge dort den Spiel-Shortcode ein, um PolyLex sofort live zu schalten."
+msgstr "Create a new page and insert the game shortcode to put PolyLex live immediately."
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Erstmalig"
+msgstr "First time"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Es wird das erste Feld je Zeile gelesen. Erlaubt sind genau 5 Buchstaben gemäß gewählter Sprache (für Deutsch inkl. ä, ö, ü, ß). Dubletten werden nicht erneut importiert."
+msgstr "The first field of each line is read. Exactly 5 letters are allowed according to the selected language (for German incl. ä, ö, ü, ß). Duplicates are not imported again."
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Gemeldete Lösungswörter"
+msgstr "Reported solution words"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Gemeldete Wort-Meldung gelöscht."
+msgstr "Reported word entry deleted."
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Getrackte unbekannte Wörter"
+msgstr "Tracked unknown words"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Grund"
+msgstr "Reason"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Keine Sprachdaten vorhanden."
+msgstr "No language data available."
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Keine Wörter für die gewählte Sprache vorhanden."
+msgstr "No words available for the selected language."
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Keine gemeldeten Wörter für die gewählte Sprache vorhanden."
+msgstr "No reported words available for the selected language."
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Keine getrackten Wörter für die gewählte Sprache vorhanden."
+msgstr "No tracked words available for the selected language."
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Konfiguriere Sprache, Versuche, Persistenz, Importe und getrackte Wörter in der WordPress-Einstellungsseite."
+msgstr "Configure language, attempts, persistence, imports, and tracked words in the WordPress settings page."
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Letzter Spieltag"
+msgstr "Last play day"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Lösungswort melden"
+msgstr "Report solution word"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Mehrere Wörter möglich, getrennt durch Zeilenumbrüche, Leerzeichen, Kommas oder Semikolons. Es werden nur gültige Wörter mit 5 Buchstaben importiert."
+msgstr "Multiple words are allowed, separated by line breaks, spaces, commas, or semicolons. Only valid 5-letter words are imported."
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Melden"
+msgstr "Report"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Meldungen"
+msgstr "Reports"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Neue Seite erstellen"
+msgstr "Create new page"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Nicht in Grundform"
+msgstr "Not in base form"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Nicht singular"
+msgstr "Not singular"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Nutze die folgenden Shortcodes in Seiten oder Beiträgen:"
+msgstr "Use the following shortcodes in pages or posts:"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Schnellstart"
+msgstr "Quick start"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Schreibfehler"
+msgstr "Typo"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Shortcodes"
+msgstr "Shortcodes"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Sonstiger Grund"
+msgstr "Other reason"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Sprache"
+msgstr "Language"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Sprache hinzufügen:"
+msgstr "Add language:"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Sprache überschreiben:"
+msgstr "Overwrite language:"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Sprache:"
+msgstr "Language:"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Sprachen mit Wörtern"
+msgstr "Languages with words"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Sprachverwaltung"
+msgstr "Language management"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Statistik"
+msgstr "Statistics"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Statistik zurücksetzen"
+msgstr "Reset statistics"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Ungültiges Wort"
+msgstr "Invalid word"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Vorkommen"
+msgstr "Occurrences"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Wort"
+msgstr "Word"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Wort melden"
+msgstr "Report word"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Wörter"
+msgstr "Words"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Wörter gesamt"
+msgstr "Total words"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/ahx_wp_polylex.php
+msgid "Wörter je Sprache"
+msgstr "Words per language"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Wörter per Textfeld importieren"
+msgstr "Import words via text field"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Wörter pro Sprache verwalten"
+msgstr "Manage words per language"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Wörter: %d"
+msgstr "Words: %d"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "Zuletzt"
+msgstr "Last"
+
+#: C:/wamp64/www/wordpress/wp-content/plugins/ahx_wp_polylex/admin/config-page.php
+msgid "×"
+msgstr "×"
+
+
+

@@ -1,36 +1,36 @@
-# AHX WP Wordle
+# AHX WP PolyLex
 
-Ein einfaches Wordle-Spiel als WordPress-Plugin.
+Ein einfaches PolyLex-Spiel als WordPress-Plugin.
 
 ## Installation
 
-1. Plugin-Ordner `ahx_wp_wordle` in `wp-content/plugins` ablegen.
-2. Plugin **AHX WP Wordle** in WordPress aktivieren.
+1. Plugin-Ordner `ahx_wp_polylex` in `wp-content/plugins` ablegen.
+2. Plugin **AHX WP PolyLex** in WordPress aktivieren.
 
 ## Nutzung
 
 Füge den Shortcode in eine Seite oder einen Beitrag ein:
 
-`[ahx_wordle]`
+`[ahx_polylex]`
 
 Optional mit Sprache:
 
-`[ahx_wordle lang="de_DE"]`
+`[ahx_polylex lang="de_DE"]`
 
 Im Frontend kann die Sprache zusätzlich über ein Dropdown gewechselt werden.
 Status- und Hinweistexte im Spiel werden abhängig von der gewählten Sprache ausgegeben.
 
 ### Frontend-Tags (Shortcodes)
 
-- Spiel: `[ahx_wordle_game]`
-- Statistik: `[ahx_wordle_stats]`
-- Anleitung: `[ahx_wordle_help]`
+- Spiel: `[ahx_polylex_game]`
+- Statistik: `[ahx_polylex_stats]`
+- Anleitung: `[ahx_polylex_help]`
 
-Der bisherige kombinierte Shortcode `[ahx_wordle]` bleibt weiterhin verfügbar.
+Der bisherige kombinierte Shortcode `[ahx_polylex]` bleibt weiterhin verfügbar.
 
 ## Admin-Bereich
 
-Nach der Aktivierung findest du links im WordPress-Backend den Menüpunkt **AHX WP Wordle**.
+Nach der Aktivierung findest du links im WordPress-Backend den Menüpunkt **AHX WP PolyLex**.
 
 Dort kannst du konfigurieren:
 
@@ -54,7 +54,7 @@ Dort kannst du konfigurieren:
 
 ## CSV-Import
 
-- Import im Admin-Bereich über **AHX WP Wordle → Einstellungen → CSV-Import Wörter**.
+- Import im Admin-Bereich über **AHX WP PolyLex → Einstellungen → CSV-Import Wörter**.
 - Pro Import wird die Zielsprache über ein Select aus den möglichen Sprachen gewählt.
 - Pro Zeile wird das erste Feld gelesen (`;` und `,` als Trennzeichen werden akzeptiert).
 - Nur gültige 5-Buchstaben-Wörter (`a-z`) werden übernommen.
@@ -97,3 +97,5 @@ Wenn ein angemeldeter Administrator im Frontend ein Wort eingibt, das nicht in d
 	- Gäste: Speicherung primär im `localStorage` des Browsers.
 	- Fallback für Gäste bei deaktiviertem `localStorage`: serverseitiger AJAX-Flow mit Cookie-Speicherung.
 - Über die Einstellung **Persistenzmodus** kann das Verhalten explizit erzwungen werden.
+
+
